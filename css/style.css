@@ -110,7 +110,7 @@ body{
 .mem-info{flex:1; text-align:center; background:#fff; border-radius:999px; padding:10px 14px; font-weight:800; box-shadow:var(--shadow); font-size:clamp(15px,4vw,20px)}
 .mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(8px,2.5vw,14px); max-width:560px; margin:18px auto 0; width:100%}
 .mem-card{aspect-ratio:1; perspective:700px; cursor:pointer; border:none; background:none; padding:0}
-.mem-card .inner{position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .35s ease}
+.mem-card .inner{display:block; position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .35s ease}
 .mem-card.flipped .inner{transform:rotateY(180deg)}
 .mem-card .back, .mem-card .face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
   border-radius:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 0 rgba(0,0,0,.12)}
