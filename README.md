@@ -18,7 +18,7 @@ tablet or computer.
 | 🍎 **Fun Quiz** | World knowledge & reasoning | Animal sounds, "Which is a fruit?", odd-one-out, colors, real-life situations |
 | 🧠 **Think & Code** | Logic / early coding | Continue the pattern, odd one out, biggest/smallest, "what happens first?", more/fewer |
 | 📖 **Story Time** | Listening, values, imagination | Read-aloud picture stories (Thirsty Crow, Tortoise & Hare, Lion & Mouse…) each ending in a gentle moral. A new story each day, plus a "New Story" button |
-| 🧩 **Memory Match** | Memory, focus, vocabulary | Flip cards to find matching pairs; each picture's name is read aloud as she flips, so she learns words while she plays |
+| 🧩 **Memory Match** | Matching, focus, vocabulary | All cards stay face-up — tap two of the same picture to pair them; each picture's name is read aloud, so she learns words while she plays |
 
 ### Why "Think & Code" counts as coding for a 5-year-old
 Early coding is really **logical thinking**: spotting patterns, sequencing steps

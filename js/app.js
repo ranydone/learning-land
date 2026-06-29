@@ -343,11 +343,11 @@
     mem.moves = 0;
     mem.lock = false;
     $('memPairs').textContent = '0/' + mem.total;
-    $('memFeedback').textContent = '';
+    $('memFeedback').textContent = '👀 Tap two pictures that are the same!';
     $('memFeedback').className = 'feedback';
     renderMemGrid();
     show('memory');
-    speak('Find the matching pairs!');
+    speak('Tap two pictures that are the same!');
   }
 
   function renderMemGrid() {
@@ -357,16 +357,16 @@
       const btn = document.createElement('button');
       btn.className = 'mem-card';
       btn.dataset.idx = idx;
-      btn.innerHTML = '<span class="inner"><span class="back">❔</span><span class="face">' + card.emoji + '</span></span>';
-      btn.onclick = () => flipCard(btn, card, idx);
+      btn.textContent = card.emoji;          // cards stay face-up (easy mode)
+      btn.onclick = () => selectCard(btn, card, idx);
       grid.appendChild(btn);
     });
   }
 
-  function flipCard(btn, card, idx) {
+  function selectCard(btn, card, idx) {
     if (mem.lock) return;
-    if (btn.classList.contains('flipped') || btn.classList.contains('matched')) return;
-    btn.classList.add('flipped');
+    if (btn.classList.contains('selected') || btn.classList.contains('matched')) return;
+    btn.classList.add('selected');
     speak(card.name);
     mem.flipped.push({ btn, card, idx });
     if (mem.flipped.length < 2) return;
@@ -377,6 +377,7 @@
     if (a.card.key === b.card.key) {
       // match!
       setTimeout(() => {
+        a.btn.classList.remove('selected'); b.btn.classList.remove('selected');
         a.btn.classList.add('matched'); b.btn.classList.add('matched');
         mem.matched++;
         $('memPairs').textContent = mem.matched + '/' + mem.total;
@@ -389,16 +390,17 @@
         mem.flipped = [];
         mem.lock = false;
         if (mem.matched === mem.total) setTimeout(finishMemory, 900);
-      }, 450);
+      }, 350);
     } else {
-      // no match -> flip back
-      $('memFeedback').textContent = '🔄 Try again!';
+      // not a match -> gently deselect both
+      $('memFeedback').textContent = '🔄 Not the same — try again!';
       $('memFeedback').className = 'feedback try';
+      a.btn.classList.add('wrong'); b.btn.classList.add('wrong');
       setTimeout(() => {
-        a.btn.classList.remove('flipped'); b.btn.classList.remove('flipped');
+        a.btn.classList.remove('selected', 'wrong'); b.btn.classList.remove('selected', 'wrong');
         mem.flipped = [];
         mem.lock = false;
-      }, 950);
+      }, 750);
     }
   }
 
