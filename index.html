@@ -55,6 +55,11 @@
         <span class="tile-name">Think & Code</span>
         <span class="tile-sub">Patterns & logic</span>
       </button>
+      <button class="tile t-story" data-story="open">
+        <span class="tile-emoji">📖</span>
+        <span class="tile-name">Story Time</span>
+        <span class="tile-sub">A tale with a moral</span>
+      </button>
     </section>
 
     <footer class="home-foot">
@@ -81,6 +86,26 @@
     <div id="feedback" class="feedback"></div>
   </main>
 
+  <!-- STORY SCREEN -->
+  <main id="story" class="screen">
+    <header class="play-top">
+      <button id="storyHome" class="round-btn" title="Back home">🏠</button>
+      <div class="progress"><div id="storyBar" class="progress-fill"></div></div>
+      <button id="storySpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+
+    <div class="story-card">
+      <h2 id="storyTitle" class="story-title"></h2>
+      <div id="storyScene" class="story-scene"></div>
+      <p id="storyText" class="story-text"></p>
+    </div>
+
+    <div class="story-nav">
+      <button id="storyPrev" class="big-btn story-prev">◀ Back</button>
+      <button id="storyNext" class="big-btn story-next">Next ▶</button>
+    </div>
+  </main>
+
   <!-- DONE SCREEN -->
   <main id="done" class="screen">
     <div class="done-card">
@@ -97,6 +122,7 @@
 
   <script src="js/rng.js"></script>
   <script src="js/content.js"></script>
+  <script src="js/stories.js"></script>
   <script src="js/generators.js"></script>
   <script src="js/app.js"></script>
 </body>

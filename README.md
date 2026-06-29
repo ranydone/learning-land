@@ -17,6 +17,7 @@ tablet or computer.
 | 🔤 **Alphabets** | Letter recognition & phonics | "Apple starts with…?", "Find the letter B", "What comes after C?" |
 | 🍎 **Fun Quiz** | World knowledge & reasoning | Animal sounds, "Which is a fruit?", odd-one-out, colors, real-life situations |
 | 🧠 **Think & Code** | Logic / early coding | Continue the pattern, odd one out, biggest/smallest, "what happens first?", more/fewer |
+| 📖 **Story Time** | Listening, values, imagination | Read-aloud picture stories (Thirsty Crow, Tortoise & Hare, Lion & Mouse…) each ending in a gentle moral. A new story each day, plus a "New Story" button |
 
 ### Why "Think & Code" counts as coding for a 5-year-old
 Early coding is really **logical thinking**: spotting patterns, sequencing steps

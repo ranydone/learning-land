@@ -55,6 +55,7 @@ body{
 .t-abc{background:linear-gradient(135deg,#ff5da2,#9b5de5)}
 .t-quiz{background:linear-gradient(135deg,#27c46b,#06d6a0)}
 .t-logic{background:linear-gradient(135deg,#ef476f,#9b5de5)}
+.t-story{background:linear-gradient(135deg,#ff8fab,#ffb703)}
 .t-daily{grid-column:1/-1}
 
 .home-foot{margin-top:auto; padding-top:20px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
@@ -101,6 +102,20 @@ body{
 .feedback{text-align:center; font-size:clamp(22px,6vw,32px); font-weight:800; min-height:1.4em; margin-top:14px}
 .feedback.good{color:var(--green)}
 .feedback.try{color:var(--orange)}
+
+/* ---------- STORY ---------- */
+.story-card{position:relative; background:var(--card); border-radius:var(--radius); margin-top:18px; padding:clamp(20px,5vw,40px);
+  box-shadow:var(--shadow); text-align:center; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px}
+.story-title{margin:0; font-size:clamp(20px,5vw,30px); color:var(--purple); font-weight:800}
+.story-scene{font-size:clamp(70px,20vw,140px); line-height:1.1; min-height:1.1em; animation:fadein .35s ease}
+.story-text{font-size:clamp(20px,5vw,30px); font-weight:600; line-height:1.35; margin:0; max-width:18ch; color:var(--ink)}
+.story-card.moral{background:linear-gradient(135deg,#fff7e0,#ffe6f2)}
+.story-card.moral .story-text{color:var(--orange); font-weight:800}
+@keyframes fadein{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
+.story-nav{display:flex; gap:14px; justify-content:center; margin-top:16px}
+.story-prev{background:linear-gradient(135deg,#bdb2ff,#9b5de5)}
+.story-next{background:linear-gradient(135deg,var(--green),#06d6a0)}
+.big-btn:disabled{opacity:.4; cursor:default; transform:none}
 
 /* ---------- DONE ---------- */
 .done-card{margin:auto; background:var(--card); border-radius:var(--radius); padding:clamp(24px,7vw,48px); text-align:center; box-shadow:var(--shadow); max-width:520px}

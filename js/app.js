@@ -74,7 +74,7 @@
       if (!state.muted) speak('Sound is on');
     };
     document.querySelectorAll('.tile').forEach(t => {
-      t.onclick = () => startGame(t.dataset.game);
+      t.onclick = () => (t.dataset.story ? openStory(null) : startGame(t.dataset.game));
     });
   }
   function updateMuteBtn() {
@@ -196,6 +196,62 @@
   /* ---------- play top controls ---------- */
   $('backBtn').onclick = () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('speakBtn').onclick = () => { const q = state.queue[state.idx]; if (q) speak(q.speak || q.prompt); };
+
+  /* ---------- STORY TIME ---------- */
+  const story = { list: window.STORIES || [], cur: null, idx: 0 };
+
+  function openStory(forceId) {
+    if (!story.list.length) return;
+    let chosen;
+    if (forceId) {
+      chosen = story.list.find(s => s.id === forceId) || story.list[0];
+    } else {
+      // Today's story is the same all day, new each day.
+      const R = makeRNG('story-' + todayKey());
+      chosen = R.pick(story.list);
+    }
+    story.cur = chosen;
+    story.idx = 0;
+    show('story');
+    renderScene();
+  }
+
+  function newStory() {
+    // pick a different random story than the current one
+    const others = story.list.filter(s => s.id !== (story.cur && story.cur.id));
+    const next = others.length ? others[Math.floor(Math.random() * others.length)] : story.cur;
+    story.cur = next; story.idx = 0; renderScene();
+  }
+
+  function renderScene() {
+    const s = story.cur;
+    const scenes = s.scenes;
+    const i = story.idx;
+    const scene = scenes[i];
+    const isMoral = i === scenes.length - 1;
+
+    $('storyTitle').textContent = s.title;
+    const sceneEl = $('storyScene');
+    sceneEl.textContent = scene.art;
+    sceneEl.style.animation = 'none'; void sceneEl.offsetWidth; sceneEl.style.animation = '';
+    $('storyText').textContent = scene.text;
+    $('storyBar').style.width = ((i + 1) / scenes.length * 100) + '%';
+    $('story').querySelector('.story-card').classList.toggle('moral', isMoral);
+
+    $('storyPrev').disabled = i === 0;
+    $('storyNext').textContent = isMoral ? '📖 New Story' : 'Next ▶';
+    if (isMoral) burst();
+
+    speak(scene.text);
+  }
+
+  $('storyHome').onclick = () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  $('storySpeak').onclick = () => { if (story.cur) speak(story.cur.scenes[story.idx].text); };
+  $('storyPrev').onclick = () => { if (story.idx > 0) { story.idx--; renderScene(); } };
+  $('storyNext').onclick = () => {
+    if (story.idx < story.cur.scenes.length - 1) { story.idx++; renderScene(); }
+    else { newStory(); }
+  };
 
   /* ---------- confetti ---------- */
   const cv = $('confetti'); const ctx = cv.getContext('2d');
