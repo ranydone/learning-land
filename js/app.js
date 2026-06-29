@@ -15,24 +15,79 @@
 
   /* ---------- voice ---------- */
   let voice = null;
-  function pickVoice() {
-    const vs = speechSynthesis.getVoices();
-    voice = vs.find(v => /female|zira|samantha|google uk english female|karen/i.test(v.name))
-      || vs.find(v => /en-/i.test(v.lang)) || vs[0] || null;
+  const hasTTS = 'speechSynthesis' in window;
+
+  // Rank voices so we auto-pick the clearest, most natural one available.
+  // Modern "Natural"/"Neural"/online voices (Edge, Chrome, Android, iOS) score highest.
+  function scoreVoice(v) {
+    const n = (v.name || '').toLowerCase();
+    const lang = (v.lang || '').toLowerCase();
+    let s = 0;
+    if (/natural|neural|online/.test(n)) s += 120;            // Microsoft/Edge neural voices
+    if (/google/.test(n)) s += 60;                             // Chrome's Google voices (clear)
+    if (/aria|jenny|libby|sonia|natasha|clara|emma|ava|allison|samantha|neerja|asha|swara/.test(n)) s += 55;
+    if (/female|woman|girl/.test(n)) s += 25;                  // warmer for a young child
+    if (/zira|heera/.test(n)) s += 10;                         // common Windows female (a bit robotic)
+    if (/david|mark|guy|ravi|prabhat|george/.test(n)) s -= 20; // default male voices
+    if (lang.startsWith('en-in')) s += 22;                     // familiar Indian-English accent
+    else if (lang.startsWith('en-gb')) s += 16;
+    else if (lang.startsWith('en-us')) s += 18;
+    else if (lang.startsWith('en')) s += 8;
+    else s -= 40;                                              // non-English: avoid
+    return s;
   }
-  if ('speechSynthesis' in window) {
+
+  function bestVoice(vs) {
+    if (!vs.length) return null;
+    return vs.slice().sort((a, b) => scoreVoice(b) - scoreVoice(a))[0];
+  }
+
+  function englishVoices() {
+    if (!hasTTS) return [];
+    return speechSynthesis.getVoices()
+      .filter(v => (v.lang || '').toLowerCase().startsWith('en'))
+      .sort((a, b) => scoreVoice(b) - scoreVoice(a));
+  }
+
+  function pickVoice() {
+    if (!hasTTS) return;
+    const vs = speechSynthesis.getVoices();
+    if (!vs.length) return;
+    const saved = localStorage.getItem('ll_voice');
+    voice = (saved && vs.find(v => v.voiceURI === saved)) || bestVoice(vs);
+    populateVoicePicker();
+  }
+
+  if (hasTTS) {
     pickVoice();
     speechSynthesis.onvoiceschanged = pickVoice;
   }
+
   function speak(text) {
-    if (state.muted || !('speechSynthesis' in window) || !text) return;
+    if (state.muted || !hasTTS || !text) return;
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.92; u.pitch = 1.15; u.volume = 1;
-      if (voice) u.voice = voice;
+      // Warm, clear, slightly playful — good for a 5-year-old.
+      u.rate = 0.88; u.pitch = 1.12; u.volume = 1;
+      if (voice) { u.voice = voice; u.lang = voice.lang; }
       speechSynthesis.speak(u);
     } catch (e) { /* ignore */ }
+  }
+
+  // Fill the home-screen voice dropdown with the device's English voices.
+  function populateVoicePicker() {
+    const sel = $('voiceSelect');
+    if (!sel) return;
+    const vs = englishVoices();
+    if (!vs.length) { sel.style.display = 'none'; return; }
+    sel.style.display = '';
+    const cur = voice ? voice.voiceURI : '';
+    sel.innerHTML = vs.map(v => {
+      const nice = v.name.replace(/microsoft|online|\(natural\)|desktop/gi, '').replace(/\s+/g, ' ').trim();
+      const star = scoreVoice(v) >= 120 ? '⭐ ' : '';
+      return `<option value="${v.voiceURI}"${v.voiceURI === cur ? ' selected' : ''}>${star}${nice} (${v.lang})</option>`;
+    }).join('');
   }
 
   /* ---------- score (per day) ---------- */
@@ -72,6 +127,15 @@
       if (state.muted && 'speechSynthesis' in window) speechSynthesis.cancel();
       updateMuteBtn();
       if (!state.muted) speak('Sound is on');
+    };
+    populateVoicePicker();
+    $('voiceSelect').onchange = (e) => {
+      const vs = speechSynthesis.getVoices();
+      voice = vs.find(v => v.voiceURI === e.target.value) || voice;
+      if (voice) localStorage.setItem('ll_voice', voice.voiceURI);
+      // play a friendly sample so the choice is obvious
+      const sample = 'Hi ' + state.name + '! Let us learn and have fun together!';
+      const wasMuted = state.muted; state.muted = false; speak(sample); state.muted = wasMuted;
     };
     document.querySelectorAll('.tile').forEach(t => {
       t.onclick = () => (t.dataset.story ? openStory(null) : startGame(t.dataset.game));
