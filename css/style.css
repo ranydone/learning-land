@@ -56,6 +56,7 @@ body{
 .t-quiz{background:linear-gradient(135deg,#27c46b,#06d6a0)}
 .t-logic{background:linear-gradient(135deg,#ef476f,#9b5de5)}
 .t-story{background:linear-gradient(135deg,#ff8fab,#ffb703)}
+.t-memory{background:linear-gradient(135deg,#00bbf9,#9b5de5)}
 .t-daily{grid-column:1/-1}
 
 .home-foot{margin-top:auto; padding-top:20px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
@@ -104,6 +105,23 @@ body{
 .feedback{text-align:center; font-size:clamp(22px,6vw,32px); font-weight:800; min-height:1.4em; margin-top:14px}
 .feedback.good{color:var(--green)}
 .feedback.try{color:var(--orange)}
+
+/* ---------- MEMORY MATCH ---------- */
+.mem-info{flex:1; text-align:center; background:#fff; border-radius:999px; padding:10px 14px; font-weight:800; box-shadow:var(--shadow); font-size:clamp(15px,4vw,20px)}
+.mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(8px,2.5vw,14px); max-width:560px; margin:18px auto 0; width:100%}
+.mem-card{aspect-ratio:1; perspective:700px; cursor:pointer; border:none; background:none; padding:0}
+.mem-card .inner{position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .35s ease}
+.mem-card.flipped .inner{transform:rotateY(180deg)}
+.mem-card .back, .mem-card .face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  border-radius:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 0 rgba(0,0,0,.12)}
+.mem-card .back{background:linear-gradient(135deg,#5e60ce,#00bbf9); color:#fff; font-size:clamp(26px,7vw,40px)}
+.mem-card .face{background:#fff; transform:rotateY(180deg); font-size:clamp(34px,9vw,56px)}
+.mem-card.matched .inner{transform:rotateY(180deg)}
+.mem-card.matched .face{background:#eafff2; animation:pop .45s ease; box-shadow:0 0 0 4px var(--green) inset}
+.mem-card.matched{cursor:default}
+.mem-card:active .inner{transform:scale(.96)}
+.mem-card.flipped:active .inner, .mem-card.matched:active .inner{transform:rotateY(180deg) scale(.96)}
+@media (max-width:430px){ .mem-grid{grid-template-columns:repeat(3,1fr)} }
 
 /* ---------- STORY ---------- */
 .story-card{position:relative; background:var(--card); border-radius:var(--radius); margin-top:18px; padding:clamp(20px,5vw,40px);

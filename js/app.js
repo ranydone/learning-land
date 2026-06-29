@@ -138,7 +138,9 @@
       const wasMuted = state.muted; state.muted = false; speak(sample); state.muted = wasMuted;
     };
     document.querySelectorAll('.tile').forEach(t => {
-      t.onclick = () => (t.dataset.story ? openStory(null) : startGame(t.dataset.game));
+      t.onclick = () => (t.dataset.story ? openStory(null)
+        : t.dataset.memory ? startMemory()
+          : startGame(t.dataset.game));
     });
   }
   function updateMuteBtn() {
@@ -316,6 +318,114 @@
     if (story.idx < story.cur.scenes.length - 1) { story.idx++; renderScene(); }
     else { newStory(); }
   };
+
+  /* ---------- MEMORY MATCH ---------- */
+  const mem = { cards: [], flipped: [], matched: 0, total: 6, lock: false, moves: 0 };
+
+  function namedPool() {
+    const C = window.CONTENT;
+    // items that have both a picture and a name -> we can say the word aloud
+    return [...C.animals, ...C.fruits, ...C.vehicles].filter(x => x.e && x.name);
+  }
+
+  function startMemory() {
+    const R = makeRNG('mem-' + Date.now() + '-' + Math.random());
+    mem.total = 6;
+    const items = R.sample(namedPool(), mem.total);
+    let cards = [];
+    items.forEach((it, i) => {
+      cards.push({ key: 'p' + i, emoji: it.e, name: it.name });
+      cards.push({ key: 'p' + i, emoji: it.e, name: it.name });
+    });
+    mem.cards = R.shuffle(cards);
+    mem.flipped = [];
+    mem.matched = 0;
+    mem.moves = 0;
+    mem.lock = false;
+    $('memPairs').textContent = '0/' + mem.total;
+    $('memFeedback').textContent = '';
+    $('memFeedback').className = 'feedback';
+    renderMemGrid();
+    show('memory');
+    speak('Find the matching pairs!');
+  }
+
+  function renderMemGrid() {
+    const grid = $('memGrid');
+    grid.innerHTML = '';
+    mem.cards.forEach((card, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'mem-card';
+      btn.dataset.idx = idx;
+      btn.innerHTML = '<span class="inner"><span class="back">❔</span><span class="face">' + card.emoji + '</span></span>';
+      btn.onclick = () => flipCard(btn, card, idx);
+      grid.appendChild(btn);
+    });
+  }
+
+  function flipCard(btn, card, idx) {
+    if (mem.lock) return;
+    if (btn.classList.contains('flipped') || btn.classList.contains('matched')) return;
+    btn.classList.add('flipped');
+    speak(card.name);
+    mem.flipped.push({ btn, card, idx });
+    if (mem.flipped.length < 2) return;
+
+    mem.lock = true;
+    mem.moves++;
+    const [a, b] = mem.flipped;
+    if (a.card.key === b.card.key) {
+      // match!
+      setTimeout(() => {
+        a.btn.classList.add('matched'); b.btn.classList.add('matched');
+        mem.matched++;
+        $('memPairs').textContent = mem.matched + '/' + mem.total;
+        addStars(1);
+        const praise = window.CONTENT.praise[Math.floor(Math.random() * window.CONTENT.praise.length)];
+        $('memFeedback').textContent = '🎉 ' + praise + ' (' + a.card.name + ')';
+        $('memFeedback').className = 'feedback good';
+        speak(praise);
+        burst();
+        mem.flipped = [];
+        mem.lock = false;
+        if (mem.matched === mem.total) setTimeout(finishMemory, 900);
+      }, 450);
+    } else {
+      // no match -> flip back
+      $('memFeedback').textContent = '🔄 Try again!';
+      $('memFeedback').className = 'feedback try';
+      setTimeout(() => {
+        a.btn.classList.remove('flipped'); b.btn.classList.remove('flipped');
+        mem.flipped = [];
+        mem.lock = false;
+      }, 950);
+    }
+  }
+
+  function finishMemory() {
+    show('done');
+    const perfect = mem.total;            // fewest possible 2-card turns
+    const ratio = perfect / mem.moves;    // 1.0 = perfect memory
+    const stars = ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1;
+    $('doneTitle').textContent = stars === 3 ? 'Amazing Memory! 🌟' : stars === 2 ? 'Great Matching! 🎈' : 'You did it! 👍';
+    $('doneMsg').textContent = `You found all ${mem.total} pairs in ${mem.moves} tries! Total stars today: ${getTodayStars()} ⭐`;
+    const row = $('starRow');
+    row.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+      const s = document.createElement('span');
+      s.className = 's' + (i < stars ? ' lit' : '');
+      s.textContent = '⭐';
+      row.appendChild(s);
+      if (i < stars) setTimeout(() => burst(), 300 + i * 300);
+    }
+    speak('Well done ' + state.name + '! You found all the pairs!');
+    $('againBtn').textContent = '▶️ Play Again';
+    $('againBtn').onclick = startMemory;
+    $('homeBtn').onclick = () => { initHome(); show('home'); };
+  }
+
+  $('memHome').onclick = () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  $('memNew').onclick = () => startMemory();
 
   /* ---------- confetti ---------- */
   const cv = $('confetti'); const ctx = cv.getContext('2d');

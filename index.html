@@ -60,6 +60,11 @@
         <span class="tile-name">Story Time</span>
         <span class="tile-sub">A tale with a moral</span>
       </button>
+      <button class="tile t-memory" data-memory="open">
+        <span class="tile-emoji">🧩</span>
+        <span class="tile-name">Memory Match</span>
+        <span class="tile-sub">Find the pairs!</span>
+      </button>
     </section>
 
     <footer class="home-foot">
@@ -107,6 +112,17 @@
       <button id="storyPrev" class="big-btn story-prev">◀ Back</button>
       <button id="storyNext" class="big-btn story-next">Next ▶</button>
     </div>
+  </main>
+
+  <!-- MEMORY MATCH SCREEN -->
+  <main id="memory" class="screen">
+    <header class="play-top">
+      <button id="memHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info">🧩 Pairs found: <span id="memPairs">0/6</span></div>
+      <button id="memNew" class="round-btn" title="New game">🔄</button>
+    </header>
+    <div id="memGrid" class="mem-grid"></div>
+    <div id="memFeedback" class="feedback"></div>
   </main>
 
   <!-- DONE SCREEN -->
