@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffb703" />
+  <title>Learning Land 🌈</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>" />
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+
+  <!-- HOME SCREEN -->
+  <main id="home" class="screen active">
+    <header class="topbar">
+      <div class="hello">
+        <span class="wave">👋</span>
+        <span>Hi, <button id="nameBtn" class="name-pill" title="Tap to change name">Star</button>!</span>
+      </div>
+      <div class="score-pill" title="Stars earned today">⭐ <span id="todayStars">0</span></div>
+    </header>
+
+    <div class="hero">
+      <h1 class="title">Learning&nbsp;Land</h1>
+      <p class="subtitle">Pick a game to play 🎈</p>
+      <p class="datechip">📅 <span id="dateLabel"></span> · New puzzles every day!</p>
+    </div>
+
+    <section class="tiles">
+      <button class="tile t-daily" data-game="daily">
+        <span class="tile-emoji">⭐</span>
+        <span class="tile-name">Daily Play</span>
+        <span class="tile-sub">Today's special set</span>
+      </button>
+      <button class="tile t-num" data-game="numbers">
+        <span class="tile-emoji">🔢</span>
+        <span class="tile-name">Numbers</span>
+        <span class="tile-sub">Count & compare</span>
+      </button>
+      <button class="tile t-abc" data-game="alphabets">
+        <span class="tile-emoji">🔤</span>
+        <span class="tile-name">Alphabets</span>
+        <span class="tile-sub">Letters & sounds</span>
+      </button>
+      <button class="tile t-quiz" data-game="quiz">
+        <span class="tile-emoji">🍎</span>
+        <span class="tile-name">Fun Quiz</span>
+        <span class="tile-sub">Animals & fruits</span>
+      </button>
+      <button class="tile t-logic" data-game="logic">
+        <span class="tile-emoji">🧠</span>
+        <span class="tile-name">Think & Code</span>
+        <span class="tile-sub">Patterns & logic</span>
+      </button>
+    </section>
+
+    <footer class="home-foot">
+      <button id="muteBtn" class="ghost-btn" title="Sound on/off">🔊 Sound: On</button>
+      <span class="made">Made with ❤️ for you</span>
+    </footer>
+  </main>
+
+  <!-- PLAY SCREEN -->
+  <main id="play" class="screen">
+    <header class="play-top">
+      <button id="backBtn" class="round-btn" title="Back home">🏠</button>
+      <div class="progress"><div id="progressBar" class="progress-fill"></div></div>
+      <div class="play-stars">⭐ <span id="playStars">0</span></div>
+    </header>
+
+    <div class="qcard">
+      <button id="speakBtn" class="speak-btn" title="Hear the question">🔊</button>
+      <h2 id="qPrompt" class="q-prompt">Ready?</h2>
+      <div id="qDisplay" class="q-display"></div>
+      <div id="qOptions" class="q-options"></div>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+  </main>
+
+  <!-- DONE SCREEN -->
+  <main id="done" class="screen">
+    <div class="done-card">
+      <div class="trophy">🏆</div>
+      <h1 id="doneTitle">Awesome!</h1>
+      <p id="doneMsg" class="done-msg"></p>
+      <div class="star-row" id="starRow"></div>
+      <div class="done-btns">
+        <button id="againBtn" class="big-btn play-again">▶️ Play Again</button>
+        <button id="homeBtn" class="big-btn go-home">🏠 Home</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/rng.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/generators.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

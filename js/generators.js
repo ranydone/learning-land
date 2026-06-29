@@ -1,0 +1,363 @@
+/* Question generators.
+   Every generator returns a normalized question object:
+   {
+     module, prompt, speak,
+     display: { kind:'emojis'|'huge'|'text'|'color'|'none', value:'' },
+     options: [ { label, emoji, correct } ],   // tap to answer
+   }
+   R is a seeded RNG (see rng.js). C is the CONTENT bank.
+*/
+(function (global) {
+  const C = global.CONTENT;
+
+  // ---- small helpers ----
+  const repeatEmoji = (e, n) => Array.from({ length: n }, () => e).join(' ');
+
+  // Build options from a correct value + distractor pool of {label, emoji}
+  function buildOptions(R, correct, pool, n = 4) {
+    const key = (o) => (o.label || '') + '|' + (o.emoji || '');
+    const ckey = key(correct);
+    const distract = R.sample(pool.filter(p => key(p) !== ckey), n - 1);
+    return R.shuffle([{ ...correct, correct: true }, ...distract.map(d => ({ ...d, correct: false }))]);
+  }
+  // Numeric options around the answer
+  function numberOptions(R, answer, lo, hi) {
+    const set = new Set([answer]);
+    let guard = 0;
+    while (set.size < 4 && guard++ < 50) {
+      const v = R.int(Math.max(lo, answer - 4), Math.min(hi, answer + 4));
+      set.add(v);
+    }
+    while (set.size < 4) set.add(R.int(lo, hi)); // fallback
+    return R.shuffle([...set]).map(v => ({ label: String(v), correct: v === answer }));
+  }
+
+  /* ================= NUMBERS ================= */
+  const NUM = {
+    count(R) {
+      const item = R.pick([...C.fruits, ...C.animals]);
+      const n = R.int(1, 9);
+      return {
+        module: 'numbers',
+        prompt: `How many ${item.name}?`,
+        speak: `How many ${item.name} can you count?`,
+        display: { kind: 'emojis', value: repeatEmoji(item.e, n) },
+        options: numberOptions(R, n, 1, 10),
+      };
+    },
+    bigger(R) {
+      let a = R.int(1, 9), b = R.int(1, 9);
+      while (a === b) b = R.int(1, 9);
+      const ans = Math.max(a, b);
+      return {
+        module: 'numbers',
+        prompt: 'Which number is BIGGER?',
+        speak: `Which number is bigger, ${a} or ${b}?`,
+        display: { kind: 'none', value: '' },
+        options: R.shuffle([a, b]).map(v => ({ label: String(v), correct: v === ans })),
+      };
+    },
+    smaller(R) {
+      let a = R.int(1, 9), b = R.int(1, 9);
+      while (a === b) b = R.int(1, 9);
+      const ans = Math.min(a, b);
+      return {
+        module: 'numbers',
+        prompt: 'Which number is SMALLER?',
+        speak: `Which number is smaller, ${a} or ${b}?`,
+        display: { kind: 'none', value: '' },
+        options: R.shuffle([a, b]).map(v => ({ label: String(v), correct: v === ans })),
+      };
+    },
+    next(R) {
+      const start = R.int(1, 7);
+      const seq = [start, start + 1, start + 2];
+      const ans = start + 3;
+      return {
+        module: 'numbers',
+        prompt: 'What number comes NEXT?',
+        speak: `${seq.join(', ')} ... what comes next?`,
+        display: { kind: 'huge', value: seq.join('  ') + '  ?' },
+        options: numberOptions(R, ans, 1, 12),
+      };
+    },
+    missing(R) {
+      const start = R.int(1, 6);
+      const seq = [start, start + 1, start + 2, start + 3];
+      const hideIdx = R.int(1, 2);
+      const ans = seq[hideIdx];
+      const shown = seq.map((v, i) => (i === hideIdx ? '?' : v)).join('  ');
+      return {
+        module: 'numbers',
+        prompt: 'Which number is MISSING?',
+        speak: `Find the missing number. ${seq.map((v, i) => (i === hideIdx ? 'blank' : v)).join(', ')}`,
+        display: { kind: 'huge', value: shown },
+        options: numberOptions(R, ans, 1, 12),
+      };
+    },
+    addSmall(R) {
+      const a = R.int(1, 5), b = R.int(1, 4);
+      const ans = a + b;
+      return {
+        module: 'numbers',
+        prompt: `Add them up!`,
+        speak: `What is ${a} plus ${b}?`,
+        display: { kind: 'emojis', value: repeatEmoji('🍎', a) + '  ➕  ' + repeatEmoji('🍏', b) },
+        options: numberOptions(R, ans, 1, 12),
+      };
+    },
+    all(R) { return R.pick([this.count, this.count, this.bigger, this.smaller, this.next, this.missing, this.addSmall]).call(this, R); },
+  };
+
+  /* ================= ALPHABETS ================= */
+  const ABC = {
+    startsWith(R) {
+      const item = R.pick(C.abcThings);
+      const pool = C.abcThings.filter(t => t.l !== item.l).map(t => ({ label: t.l }));
+      return {
+        module: 'alphabets',
+        prompt: `Which letter does it start with?`,
+        speak: `${item.word} starts with which letter?`,
+        display: { kind: 'emojis', value: item.e + '  ' + item.word },
+        options: buildOptions(R, { label: item.l }, pool),
+      };
+    },
+    findLetter(R) {
+      const item = R.pick(C.abcThings);
+      const pool = C.abcThings.filter(t => t.l !== item.l).map(t => ({ label: t.l, emoji: t.e }));
+      return {
+        module: 'alphabets',
+        prompt: `Find the letter ${item.l}`,
+        speak: `Can you find the big letter ${item.l}?`,
+        display: { kind: 'none', value: '' },
+        options: buildOptions(R, { label: item.l, emoji: '' }, pool).map(o => ({ label: o.label, correct: o.correct })),
+      };
+    },
+    whichPicture(R) {
+      const item = R.pick(C.abcThings);
+      const pool = C.abcThings.filter(t => t.l !== item.l).map(t => ({ label: t.word, emoji: t.e }));
+      return {
+        module: 'alphabets',
+        prompt: `Which one starts with "${item.l}"?`,
+        speak: `Which picture starts with the letter ${item.l}?`,
+        display: { kind: 'huge', value: item.l },
+        options: buildOptions(R, { label: item.word, emoji: item.e }, pool),
+      };
+    },
+    nextLetter(R) {
+      const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const i = R.int(0, 23);
+      const cur = A[i], ans = A[i + 1];
+      const pool = A.split('').filter(x => x !== ans && x !== cur).map(x => ({ label: x }));
+      return {
+        module: 'alphabets',
+        prompt: `What comes after ${cur}?`,
+        speak: `Which letter comes after ${cur}?`,
+        display: { kind: 'huge', value: cur + '  ?' },
+        options: buildOptions(R, { label: ans }, pool),
+      };
+    },
+    all(R) { return R.pick([this.startsWith, this.whichPicture, this.whichPicture, this.findLetter, this.nextLetter]).call(this, R); },
+  };
+
+  /* ================= FUN QUIZ (world knowledge / MCQ) ================= */
+  const QUIZ = {
+    animalSound(R) {
+      const a = R.pick(C.animals);
+      const pool = C.animals.filter(x => x.sound !== a.sound).map(x => ({ label: x.sound }));
+      return {
+        module: 'quiz',
+        prompt: `What sound does it make?`,
+        speak: `What sound does the ${a.name} make?`,
+        display: { kind: 'huge', value: a.e },
+        options: buildOptions(R, { label: a.sound }, pool),
+      };
+    },
+    whoSays(R) {
+      const a = R.pick(C.animals);
+      const pool = C.animals.filter(x => x.name !== a.name).map(x => ({ label: x.name, emoji: x.e }));
+      return {
+        module: 'quiz',
+        prompt: `Who says "${a.sound}"?`,
+        speak: `Who says ${a.sound}?`,
+        display: { kind: 'none', value: '' },
+        options: buildOptions(R, { label: a.name, emoji: a.e }, pool),
+      };
+    },
+    oddCategory(R) {
+      // pick a target category and 3 from it + 1 intruder
+      const cats = [
+        { name: 'fruit', items: C.fruits }, { name: 'animal', items: C.animals }, { name: 'vehicle', items: C.vehicles },
+      ];
+      const target = R.pick(cats);
+      const others = cats.filter(c => c.name !== target.name);
+      const intruderCat = R.pick(others);
+      const same = R.sample(target.items, 3).map(x => ({ label: x.name, emoji: x.e, correct: false }));
+      const intruder = R.pick(intruderCat.items);
+      const opts = R.shuffle([...same, { label: intruder.name, emoji: intruder.e, correct: true }]);
+      return {
+        module: 'quiz',
+        prompt: `Which one is NOT a ${target.name}?`,
+        speak: `Three of these are a ${target.name}. Which one is not?`,
+        display: { kind: 'none', value: '' },
+        options: opts,
+      };
+    },
+    pickCategory(R) {
+      const cats = [
+        { name: 'fruit', items: C.fruits }, { name: 'animal', items: C.animals }, { name: 'vehicle', items: C.vehicles },
+      ];
+      const target = R.pick(cats);
+      const others = cats.filter(c => c.name !== target.name);
+      const right = R.pick(target.items);
+      const wrong = R.sample(others.flatMap(c => c.items), 3).map(x => ({ label: x.name, emoji: x.e, correct: false }));
+      const opts = R.shuffle([{ label: right.name, emoji: right.e, correct: true }, ...wrong]);
+      return {
+        module: 'quiz',
+        prompt: `Which one is a ${target.name}?`,
+        speak: `Which one of these is a ${target.name}?`,
+        display: { kind: 'none', value: '' },
+        options: opts,
+      };
+    },
+    colorName(R) {
+      const col = R.pick(C.colors);
+      const pool = C.colors.filter(c => c.name !== col.name).map(c => ({ label: c.name }));
+      return {
+        module: 'quiz',
+        prompt: `What color is this?`,
+        speak: `What color is this?`,
+        display: { kind: 'color', value: col.hex },
+        options: buildOptions(R, { label: col.name }, pool),
+      };
+    },
+    situation(R) {
+      const s = R.pick(C.situations);
+      const wrong = R.sample(s.wrong, 3).map(w => ({ label: w.name, emoji: w.e, correct: false }));
+      const opts = R.shuffle([{ label: s.right.name, emoji: s.right.e, correct: true }, ...wrong]);
+      return {
+        module: 'quiz',
+        prompt: s.q,
+        speak: s.q,
+        display: { kind: 'none', value: '' },
+        options: opts,
+      };
+    },
+    all(R) { return R.pick([this.animalSound, this.whoSays, this.oddCategory, this.pickCategory, this.colorName, this.situation, this.situation]).call(this, R); },
+  };
+
+  /* ================= THINK & CODE (logic basics) ================= */
+  const LOGIC = {
+    pattern(R) {
+      const set = R.pick(C.patternSets);
+      const reps = R.int(2, 3);
+      const seq = [];
+      for (let i = 0; i < reps; i++) seq.push(...set);
+      const ans = set[seq.length % set.length];
+      const pool = [...new Set(C.patternSets.flat())].filter(e => e !== ans).map(e => ({ label: '', emoji: e }));
+      return {
+        module: 'logic',
+        prompt: `What comes NEXT in the pattern?`,
+        speak: `Look at the pattern. What comes next?`,
+        display: { kind: 'emojis', value: seq.join(' ') + '  ❓' },
+        options: buildOptions(R, { label: '', emoji: ans }, pool),
+      };
+    },
+    oddOneOut(R) {
+      const cats = [C.fruits, C.animals, C.vehicles, C.shapes];
+      const cat = R.pick(cats);
+      const same = R.sample(cat, 3);
+      const otherCats = cats.filter(c => c !== cat);
+      const intruder = R.pick(R.pick(otherCats));
+      const opts = R.shuffle([
+        ...same.map(x => ({ label: '', emoji: x.e, correct: false })),
+        { label: '', emoji: intruder.e, correct: true },
+      ]);
+      return {
+        module: 'logic',
+        prompt: `Which one is the ODD one out?`,
+        speak: `Three of these go together. Which one is different?`,
+        display: { kind: 'none', value: '' },
+        options: opts,
+      };
+    },
+    sizeOrder(R) {
+      const big = R.bool();
+      const e = R.pick(['🐘', '🍎', '⭐', '🟦', '🐱']);
+      const sizes = [
+        { label: 'small', emoji: `<span style="font-size:.5em">${e}</span>`, v: 1 },
+        { label: 'medium', emoji: `<span style="font-size:.8em">${e}</span>`, v: 2 },
+        { label: 'big', emoji: `<span style="font-size:1.3em">${e}</span>`, v: 3 },
+      ];
+      const ans = big ? 3 : 1;
+      return {
+        module: 'logic',
+        prompt: big ? 'Tap the BIGGEST one' : 'Tap the SMALLEST one',
+        speak: big ? 'Which one is the biggest?' : 'Which one is the smallest?',
+        display: { kind: 'none', value: '' },
+        options: R.shuffle(sizes).map(s => ({ label: '', emojiHTML: s.emoji, correct: s.v === ans })),
+      };
+    },
+    sequenceOrder(R) {
+      // "what happens FIRST?" daily-life ordering
+      const stories = [
+        { q: 'To eat a banana, what do you do FIRST?', right: { e: '🍌', name: 'peel it' }, wrong: [{ e: '🤤', name: 'eat it' }, { e: '🗑️', name: 'throw skin' }] },
+        { q: 'To go outside in rain, what do you do FIRST?', right: { e: '☂️', name: 'take umbrella' }, wrong: [{ e: '🏃', name: 'run out' }, { e: '💦', name: 'get wet' }] },
+        { q: 'Before you sleep at night, what do you do?', right: { e: '🪥', name: 'brush teeth' }, wrong: [{ e: '🍫', name: 'eat candy' }, { e: '📺', name: 'watch TV' }] },
+        { q: 'To draw a picture, what do you pick up FIRST?', right: { e: '🖍️', name: 'crayon' }, wrong: [{ e: '🍴', name: 'fork' }, { e: '🧦', name: 'sock' }] },
+        { q: 'A seed grows into a plant. What comes FIRST?', right: { e: '🌱', name: 'small sprout' }, wrong: [{ e: '🌳', name: 'big tree' }, { e: '🍎', name: 'fruit' }] },
+      ];
+      const s = R.pick(stories);
+      const opts = R.shuffle([
+        { label: s.right.name, emoji: s.right.e, correct: true },
+        ...s.wrong.map(w => ({ label: w.name, emoji: w.e, correct: false })),
+      ]);
+      return { module: 'logic', prompt: s.q, speak: s.q, display: { kind: 'none', value: '' }, options: opts };
+    },
+    sorting(R) {
+      // counting-based logic: which group has MORE / FEWER
+      const e = R.pick(['🍎', '⭐', '🐟', '🎈']);
+      let a = R.int(1, 6), b = R.int(1, 6);
+      while (a === b) b = R.int(1, 6);
+      const more = R.bool();
+      const ans = more ? (a > b ? 'A' : 'B') : (a < b ? 'A' : 'B');
+      return {
+        module: 'logic',
+        prompt: more ? 'Which box has MORE?' : 'Which box has FEWER?',
+        speak: more ? 'Which box has more?' : 'Which box has fewer?',
+        display: { kind: 'emojis', value: `A: ${repeatEmoji(e, a)}<br>B: ${repeatEmoji(e, b)}` },
+        options: R.shuffle([{ label: 'A', correct: ans === 'A' }, { label: 'B', correct: ans === 'B' }]),
+      };
+    },
+    all(R) { return R.pick([this.pattern, this.pattern, this.oddOneOut, this.sizeOrder, this.sequenceOrder, this.sorting]).call(this, R); },
+  };
+
+  // Build a session of N questions for a given module key.
+  function buildSession(moduleKey, R, n) {
+    const out = [];
+    let guard = 0;
+    while (out.length < n && guard++ < n * 12) {
+      const q = makeOne(moduleKey, R);
+      // avoid back-to-back identical prompts
+      if (out.length && out[out.length - 1].prompt === q.prompt && out[out.length - 1].display.value === q.display.value) continue;
+      out.push(q);
+    }
+    return out;
+  }
+
+  function makeOne(moduleKey, R) {
+    switch (moduleKey) {
+      case 'numbers': return NUM.all(R);
+      case 'alphabets': return ABC.all(R);
+      case 'quiz': return QUIZ.all(R);
+      case 'logic': return LOGIC.all(R);
+      case 'daily': {
+        const m = R.pick([NUM, ABC, QUIZ, LOGIC]);
+        return m.all(R);
+      }
+      default: return NUM.all(R);
+    }
+  }
+
+  global.GENERATORS = { buildSession };
+})(window);
