@@ -27,6 +27,12 @@ in order, sorting, and comparing. Those are exactly the puzzles in this section 
 the building blocks every programmer uses, taught at a KG1 level. (See
 `PARENTS.md` for the full learning plan and a 30-minute routine.)
 
+## 📋 Signup tracking (optional)
+The opening **"Enter to have fun"** screen collects the child's name, school, and
+an optional parent contact. Plug in a free Google Sheet to see every signup —
+see [SETUP-SIGNUPS.md](SETUP-SIGNUPS.md). Until configured, the app works fully
+and simply doesn't log.
+
 ## 🗣️ Made for pre-readers
 - **Every question is read aloud** automatically (tap 🔊 to hear it again).
 - **Pictures and emojis first**, words second — she can play before she can read.

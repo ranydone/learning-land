@@ -518,33 +518,79 @@
 
   function startWelcome() {
     show('welcome');
-    stepName();
+    stepEntry();
   }
 
-  function stepName() {
-    const body = setWelcome({ emoji: '🌈', title: 'Hello there!', sub: 'What is your name?' });
-    const input = document.createElement('input');
-    input.className = 'name-input';
-    input.type = 'text';
-    input.maxLength = 14;
-    input.setAttribute('autocomplete', 'off');
-    input.placeholder = 'Type your name';
-    input.value = (state.name && state.name !== 'Star') ? state.name : '';
+  // Send a signup row to the owner's Google Sheet (via Apps Script web app).
+  // Configured in js/config.js -> window.APP_CONFIG.signupEndpoint
+  function recordSignup(data) {
+    const url = (window.APP_CONFIG && window.APP_CONFIG.signupEndpoint) || '';
+    if (!url) return; // not set up yet -> app still works, just doesn't log
+    try {
+      fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(data),
+      });
+    } catch (e) { /* never block play on a logging error */ }
+  }
+
+  function entryInput(placeholder, value, max) {
+    const i = document.createElement('input');
+    i.className = 'name-input entry-field';
+    i.type = 'text';
+    i.maxLength = max;
+    i.setAttribute('autocomplete', 'off');
+    i.placeholder = placeholder;
+    i.value = value || '';
+    return i;
+  }
+  function nudge(el) {
+    el.focus();
+    el.classList.add('shake-input');
+    setTimeout(() => el.classList.remove('shake-input'), 450);
+  }
+
+  // "Enter to have fun" sign-in: collects name + school (+ optional parent contact).
+  function stepEntry() {
+    const body = setWelcome({ emoji: '🎉', title: 'Welcome!', sub: "Let's have some fun!" });
+    const note = document.createElement('p');
+    note.className = 'welcome-note';
+    note.textContent = '👩‍👧 Grown-up: please fill this in';
+    const nameIn = entryInput("Child's name", (state.name && state.name !== 'Star') ? state.name : '', 14);
+    const schoolIn = entryInput('School name', localStorage.getItem('ll_school') || '', 40);
+    const parentIn = entryInput('Parent phone or email (optional)', localStorage.getItem('ll_parent') || '', 60);
     const btn = document.createElement('button');
     btn.className = 'welcome-opt welcome-start';
-    btn.textContent = 'Start ▶️';
+    btn.textContent = 'Enter to have fun! 🎉';
     const go = () => {
-      const n = input.value.trim();
-      if (n) { state.name = n.slice(0, 14); localStorage.setItem('ll_name', state.name); }
-      if (!state.name) state.name = 'Star';
+      const child = nameIn.value.trim();
+      const school = schoolIn.value.trim();
+      const parent = parentIn.value.trim();
+      if (!child) return nudge(nameIn);
+      if (!school) return nudge(schoolIn);
+      state.name = child.slice(0, 14);
+      localStorage.setItem('ll_name', state.name);
+      localStorage.setItem('ll_school', school);
+      localStorage.setItem('ll_parent', parent);
+      // Log each new/changed signup once per device (don't spam on every visit).
+      const sig = child + '|' + school + '|' + parent;
+      if (localStorage.getItem('ll_signup_sig') !== sig) {
+        recordSignup({ child: child, school: school, parent: parent, ts: new Date().toISOString(), ref: document.referrer || '', ua: navigator.userAgent });
+        localStorage.setItem('ll_signup_sig', sig);
+      }
       stepMood();
     };
     btn.onclick = go;
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
-    body.appendChild(input);
+    parentIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+    body.appendChild(note);
+    body.appendChild(nameIn);
+    body.appendChild(schoolIn);
+    body.appendChild(parentIn);
     body.appendChild(btn);
-    setTimeout(() => { try { input.focus(); } catch (e) {} }, 120);
-    speak('Hello! What is your name?');
+    setTimeout(() => { try { nameIn.focus(); } catch (e) {} }, 120);
+    speak('Welcome! Please ask a grown up to type your name and school.');
   }
 
   function stepMood() {
