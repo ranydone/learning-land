@@ -1,11 +1,24 @@
 /* Site configuration.
  *
- * To collect signups (child name + school) into YOUR Google Sheet,
- * paste your Google Apps Script web-app URL below, between the quotes.
- * See SETUP-SIGNUPS.md for the 5-minute, step-by-step guide.
+ * 1) SIGNUP SHEET (optional): paste your Google Apps Script web-app URL to log
+ *    "play without signing in" entries to a Sheet. See SETUP-SIGNUPS.md.
  *
- * Until this is set, the app works perfectly — it just doesn't log signups.
+ * 2) FIREBASE (for Google login + cloud profile + points): paste your Firebase
+ *    web config below. See SETUP-FIREBASE.md for the step-by-step guide.
+ *
+ * Until these are set, the app works fully — Google login just won't appear,
+ * and play stays on-device.
  */
 window.APP_CONFIG = {
-  signupEndpoint: '' // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
+  signupEndpoint: '', // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
+
+  // Paste your Firebase web app config object here (from Firebase console).
+  firebase: {
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    storageBucket: '',
+    messagingSenderId: '',
+    appId: ''
+  }
 };

@@ -7,7 +7,7 @@
   <title>Learning Land 🌈</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link rel="stylesheet" href="css/style.css?v=5" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>" />
 </head>
 <body>
@@ -37,7 +37,10 @@
         <span class="wave">👋</span>
         <span>Hi, <button id="nameBtn" class="name-pill" title="Tap to change name">Star</button>!</span>
       </div>
-      <div class="score-pill" title="Stars earned today">⭐ <span id="todayStars">0</span></div>
+      <div class="top-right">
+        <div class="score-pill" title="Stars earned today">⭐ <span id="todayStars">0</span></div>
+        <button id="profileBtn" class="round-btn small" title="My profile">👤</button>
+      </div>
     </header>
 
     <div class="hero">
@@ -143,6 +146,32 @@
     <div id="memFeedback" class="feedback"></div>
   </main>
 
+  <!-- PROFILE SCREEN -->
+  <main id="profile" class="screen">
+    <header class="play-top">
+      <button id="profileHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info">👤 My Profile</div>
+      <span style="width:54px"></span>
+    </header>
+    <div class="profile-card">
+      <img id="profilePhoto" class="profile-photo" alt="" hidden />
+      <div id="profileAvatar" class="profile-avatar">🧒</div>
+      <h1 id="profileName" class="profile-name">Little Star</h1>
+      <p id="profileSchool" class="profile-school"></p>
+      <p id="profileEmail" class="profile-email"></p>
+      <div class="profile-stats">
+        <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">⭐ Total Stars</div></div>
+        <div class="stat"><div class="stat-num" id="statToday">0</div><div class="stat-label">🌟 Today</div></div>
+        <div class="stat"><div class="stat-num" id="statBadge">🌱</div><div class="stat-label">🏅 Level</div></div>
+      </div>
+      <div id="profileSignedOutNote" class="welcome-note" hidden>Playing as a guest — sign in to save your stars across devices.</div>
+      <div class="profile-actions">
+        <button id="profileSignIn" class="big-btn go-home" hidden>🔵 Sign in with Google</button>
+        <button id="profileSignOut" class="big-btn play-again" hidden>👋 Sign out</button>
+      </div>
+    </div>
+  </main>
+
   <!-- DONE SCREEN -->
   <main id="done" class="screen">
     <div class="done-card">
@@ -157,11 +186,16 @@
     </div>
   </main>
 
-  <script src="js/config.js?v=4"></script>
-  <script src="js/rng.js?v=4"></script>
-  <script src="js/content.js?v=4"></script>
-  <script src="js/stories.js?v=4"></script>
-  <script src="js/generators.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <!-- Firebase (compat SDK) for Google login + cloud profile/points -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script src="js/config.js?v=5"></script>
+  <script src="js/rng.js?v=5"></script>
+  <script src="js/content.js?v=5"></script>
+  <script src="js/stories.js?v=5"></script>
+  <script src="js/generators.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>

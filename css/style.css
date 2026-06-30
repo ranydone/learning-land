@@ -63,6 +63,8 @@ body{
 .name-pill{font:inherit; font-weight:800; color:var(--purple); background:#fff; border:3px dashed var(--purple);
   border-radius:999px; padding:2px 14px; cursor:pointer}
 .score-pill{background:#fff; border-radius:999px; padding:8px 16px; font-weight:800; font-size:clamp(16px,4vw,20px); box-shadow:var(--shadow)}
+.top-right{display:flex; align-items:center; gap:8px}
+.round-btn.small{width:46px; height:46px; font-size:22px}
 
 .hero{text-align:center; margin:14px 0 6px}
 .title{font-size:clamp(40px,11vw,84px); line-height:.95; margin:6px 0;
@@ -169,6 +171,21 @@ body{
 .story-prev{background:linear-gradient(135deg,#bdb2ff,#9b5de5)}
 .story-next{background:linear-gradient(135deg,var(--green),#06d6a0)}
 .big-btn:disabled{opacity:.4; cursor:default; transform:none}
+
+/* ---------- PROFILE ---------- */
+.profile-card{margin:18px auto 0; background:var(--card); border-radius:var(--radius); padding:clamp(22px,6vw,40px);
+  text-align:center; box-shadow:var(--shadow); max-width:520px; width:100%}
+.profile-photo{width:96px; height:96px; border-radius:50%; object-fit:cover; box-shadow:var(--shadow); border:4px solid #fff}
+.profile-avatar{font-size:84px; line-height:1}
+.profile-name{font-size:clamp(26px,7vw,38px); margin:8px 0 2px; color:var(--purple); font-weight:800}
+.profile-school{font-size:clamp(16px,4.5vw,20px); color:var(--ink-soft); font-weight:700; margin:2px 0}
+.profile-email{font-size:clamp(12px,3.4vw,15px); color:var(--ink-soft); margin:2px 0 6px; opacity:.8}
+.profile-stats{display:flex; gap:12px; justify-content:center; margin:18px 0; flex-wrap:wrap}
+.profile-stats .stat{background:#fff7e0; border-radius:20px; padding:14px 10px; min-width:92px; flex:1 1 92px; box-shadow:0 4px 0 rgba(0,0,0,.06)}
+.profile-stats .stat-num{font-size:clamp(26px,7vw,38px); font-weight:800; color:var(--orange); line-height:1}
+.profile-stats .stat-label{font-size:clamp(11px,3vw,13px); font-weight:700; color:var(--ink-soft); margin-top:4px}
+.profile-actions{display:flex; flex-direction:column; gap:12px; align-items:center; margin-top:8px}
+.profile-actions .big-btn{width:100%; max-width:320px}
 
 /* ---------- DONE ---------- */
 .done-card{margin:auto; background:var(--card); border-radius:var(--radius); padding:clamp(24px,7vw,48px); text-align:center; box-shadow:var(--shadow); max-width:520px}

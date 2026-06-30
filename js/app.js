@@ -11,7 +11,10 @@
     idx: 0,
     correct: 0,
     locked: false,
+    user: null,       // Firebase user (when signed in)
+    profile: null,    // { childName, school, points, email, photo }
   };
+  const fb = { enabled: false, auth: null, db: null, ready: false };
 
   /* ---------- voice ---------- */
   let voice = null;
@@ -95,6 +98,11 @@
   function addStars(n) {
     localStorage.setItem(todayStarsKey(), String(getTodayStars() + n));
     $('todayStars').textContent = getTodayStars();
+    // also bump lifetime total locally + in the cloud (if signed in)
+    const total = parseInt(localStorage.getItem('ll_points_total') || '0', 10) + n;
+    localStorage.setItem('ll_points_total', String(total));
+    if (state.profile) state.profile.points = total;
+    cloudAddPoints(n);
   }
 
   /* ---------- screens ---------- */
@@ -119,6 +127,7 @@
         speak('Hi ' + state.name);
       }
     };
+    $('profileBtn').onclick = openProfile;
     document.querySelectorAll('.tile').forEach(t => {
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
@@ -476,6 +485,200 @@
     else { ctx.clearRect(0, 0, cv.width, cv.height); raf = null; }
   }
 
+  /* ---------- FIREBASE AUTH + CLOUD PROFILE / POINTS ---------- */
+  let welcomeFallbackTimer = null;
+
+  function initFirebase() {
+    try {
+      const cfg = window.APP_CONFIG && window.APP_CONFIG.firebase;
+      if (!cfg || !cfg.apiKey || typeof firebase === 'undefined') return;
+      firebase.initializeApp(cfg);
+      fb.auth = firebase.auth();
+      fb.db = firebase.firestore();
+      fb.enabled = true;
+      try { fb.auth.useDeviceLanguage(); } catch (e) {}
+      fb.auth.onAuthStateChanged(handleAuthChange);
+    } catch (e) { console.warn('Firebase init skipped:', e && e.message); }
+  }
+
+  function currentScreen() { const s = document.querySelector('.screen.active'); return s ? s.id : ''; }
+
+  function handleAuthChange(user) {
+    fb.ready = true;
+    if (welcomeFallbackTimer) { clearTimeout(welcomeFallbackTimer); welcomeFallbackTimer = null; }
+    if (user) {
+      state.user = user;
+      loadProfile(user).then((prof) => {
+        if (prof && prof.childName) {
+          applyProfile(prof);
+          if (currentScreen() === 'welcome') stepMood();
+          else initHome();
+        } else {
+          if (currentScreen() !== 'welcome') show('welcome');
+          stepProfileSetup(user);
+        }
+      });
+    } else {
+      state.user = null; state.profile = null;
+      if (currentScreen() === 'welcome') stepAuth();
+    }
+  }
+
+  function loadProfile(user) {
+    if (!fb.enabled) return Promise.resolve(null);
+    return fb.db.collection('users').doc(user.uid).get()
+      .then((doc) => (doc.exists ? doc.data() : null))
+      .catch(() => null);
+  }
+
+  function applyProfile(prof) {
+    state.profile = prof;
+    if (prof.childName) { state.name = prof.childName; localStorage.setItem('ll_name', state.name); }
+    if (prof.school) localStorage.setItem('ll_school', prof.school);
+    if (typeof prof.points === 'number') localStorage.setItem('ll_points_total', String(prof.points));
+  }
+
+  function saveProfile(data) {
+    if (!fb.enabled || !state.user) return Promise.resolve();
+    const ref = fb.db.collection('users').doc(state.user.uid);
+    return ref.set(Object.assign({
+      email: state.user.email || '',
+      photo: state.user.photoURL || '',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, data), { merge: true }).catch((e) => console.warn('saveProfile', e));
+  }
+
+  function cloudAddPoints(n) {
+    if (!fb.enabled || !state.user) return;
+    try {
+      fb.db.collection('users').doc(state.user.uid).set({
+        points: firebase.firestore.FieldValue.increment(n),
+        lastPlayed: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    } catch (e) { /* ignore */ }
+  }
+
+  function signInGoogle() {
+    if (!fb.enabled) return;
+    const provider = new firebase.auth.GoogleAuthProvider();
+    setWelcome({ emoji: '⏳', title: 'Opening Google sign-in…' });
+    fb.auth.signInWithPopup(provider).catch((err) => {
+      const code = err && err.code;
+      if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment' || code === 'auth/cancelled-popup-request') {
+        fb.auth.signInWithRedirect(provider).catch(showSignInError);
+      } else if (code === 'auth/popup-closed-by-user') {
+        stepAuth();
+      } else {
+        showSignInError(err);
+      }
+    });
+  }
+
+  function showSignInError(err) {
+    const body = setWelcome({ emoji: '😕', title: 'Sign in did not work', sub: 'Please try again.' });
+    const b = document.createElement('button');
+    b.className = 'welcome-opt blue';
+    b.textContent = '↩️ Back';
+    b.onclick = stepAuth;
+    body.appendChild(b);
+    console.warn('Google sign-in error:', err && err.code, err && err.message);
+  }
+
+  function doSignOut() {
+    if (fb.enabled && fb.auth) { try { fb.auth.signOut(); } catch (e) {} }
+    state.user = null; state.profile = null;
+    show('welcome'); startWelcome();
+  }
+
+  function stepLoading() {
+    setWelcome({ emoji: '🌈', title: 'Just a moment…', sub: 'Getting things ready' });
+    if (welcomeFallbackTimer) clearTimeout(welcomeFallbackTimer);
+    welcomeFallbackTimer = setTimeout(() => { if (!fb.ready) stepAuth(); }, 5000);
+  }
+
+  function stepAuth() {
+    const body = setWelcome({ emoji: '🌈', title: 'Welcome to Learning Land!', sub: 'Sign in to save your stars ⭐' });
+    const g = document.createElement('button');
+    g.className = 'welcome-opt blue';
+    g.textContent = '🔵 Sign in with Google';
+    g.onclick = signInGoogle;
+    const p = document.createElement('button');
+    p.className = 'welcome-opt orange';
+    p.textContent = '🎈 Play without signing in';
+    p.onclick = stepEntry;
+    body.appendChild(g);
+    body.appendChild(p);
+    speak('Welcome! Ask a grown up to sign in with Google, or play without signing in.');
+  }
+
+  function stepProfileSetup(user) {
+    const guess = (user && user.displayName ? user.displayName.split(' ')[0] : '') || (state.name !== 'Star' ? state.name : '');
+    const body = setWelcome({ emoji: '🧒', title: 'Set up your profile', sub: 'Tell us about the child' });
+    const nameIn = entryInput("Child's name", guess, 14);
+    const schoolIn = entryInput('School name', localStorage.getItem('ll_school') || '', 40);
+    const btn = document.createElement('button');
+    btn.className = 'welcome-opt welcome-start';
+    btn.textContent = 'Save & Play 🎉';
+    btn.onclick = () => {
+      const child = nameIn.value.trim();
+      const school = schoolIn.value.trim();
+      if (!child) return nudge(nameIn);
+      if (!school) return nudge(schoolIn);
+      state.name = child.slice(0, 14);
+      localStorage.setItem('ll_name', state.name);
+      localStorage.setItem('ll_school', school);
+      saveProfile({ childName: state.name, school: school }).then(() => {
+        state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school });
+        stepMood();
+      });
+    };
+    body.appendChild(nameIn);
+    body.appendChild(schoolIn);
+    body.appendChild(btn);
+    setTimeout(() => { try { nameIn.focus(); } catch (e) {} }, 120);
+    speak('Please type the child name and school.');
+  }
+
+  /* ----- profile screen ----- */
+  function openProfile() {
+    if (fb.enabled && state.user) {
+      loadProfile(state.user).then((p) => { if (p) applyProfile(p); renderProfile(); });
+    }
+    renderProfile();
+    show('profile');
+  }
+
+  function levelBadge(total) {
+    if (total >= 200) return '👑';
+    if (total >= 100) return '🏆';
+    if (total >= 50) return '🌟';
+    if (total >= 20) return '🌸';
+    return '🌱';
+  }
+
+  function renderProfile() {
+    const signedIn = !!(fb.enabled && state.user);
+    const name = (state.name && state.name !== 'Star') ? state.name : (localStorage.getItem('ll_name') || 'Little Star');
+    $('profileName').textContent = name;
+    const school = (state.profile && state.profile.school) || localStorage.getItem('ll_school') || '';
+    $('profileSchool').textContent = school ? '🏫 ' + school : '';
+    $('profileEmail').textContent = signedIn ? (state.user.email || '') : '';
+    const photo = signedIn ? state.user.photoURL : '';
+    if (photo) { $('profilePhoto').src = photo; $('profilePhoto').hidden = false; $('profileAvatar').hidden = true; }
+    else { $('profilePhoto').hidden = true; $('profileAvatar').hidden = false; }
+    const total = parseInt(localStorage.getItem('ll_points_total') || '0', 10);
+    $('statTotal').textContent = total;
+    $('statToday').textContent = getTodayStars();
+    $('statBadge').textContent = levelBadge(total);
+    $('profileSignIn').hidden = signedIn || !fb.enabled;
+    $('profileSignOut').hidden = !signedIn;
+    $('profileSignedOutNote').hidden = signedIn || !fb.enabled;
+    $('profileSignIn').onclick = () => { show('welcome'); stepAuth(); };
+    $('profileSignOut').onclick = doSignOut;
+  }
+
+  $('profileHome').onclick = () => { initHome(); show('home'); };
+
   /* ---------- WELCOME / DAILY CHECK-IN ---------- */
   let welcomeTimer = null;
 
@@ -518,7 +721,8 @@
 
   function startWelcome() {
     show('welcome');
-    stepEntry();
+    if (fb.enabled) stepLoading();   // wait for Google auth state, then route
+    else stepEntry();                // no Firebase configured -> on-device flow
   }
 
   // Send a signup row to the owner's Google Sheet (via Apps Script web app).
@@ -620,5 +824,6 @@
   /* ---------- go ---------- */
   setupSoundDock();
   initHome();
+  initFirebase();
   startWelcome();
 })();

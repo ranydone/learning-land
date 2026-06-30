@@ -27,11 +27,19 @@ in order, sorting, and comparing. Those are exactly the puzzles in this section 
 the building blocks every programmer uses, taught at a KG1 level. (See
 `PARENTS.md` for the full learning plan and a 30-minute routine.)
 
-## 📋 Signup tracking (optional)
-The opening **"Enter to have fun"** screen collects the child's name, school, and
-an optional parent contact. Plug in a free Google Sheet to see every signup —
-see [SETUP-SIGNUPS.md](SETUP-SIGNUPS.md). Until configured, the app works fully
-and simply doesn't log.
+## 🔐 Accounts, profiles & points (optional)
+Add **Google sign-in** so each child gets a profile and their **points are saved
+to the cloud** and follow them across devices. Powered by Firebase Auth +
+Firestore, all from the static site. Setup: [SETUP-FIREBASE.md](SETUP-FIREBASE.md).
+Until configured, the app shows the on-device "Play without signing in" flow.
+
+Tap the **👤** button on the home screen to see the profile: name, school, total
+stars, today's stars, and a level badge.
+
+## 📋 Signup tracking (optional, simpler)
+Prefer no logins? The **"Play without signing in"** screen can log the child's
+name, school, and optional parent contact to a free Google Sheet —
+see [SETUP-SIGNUPS.md](SETUP-SIGNUPS.md).
 
 ## 🗣️ Made for pre-readers
 - **Every question is read aloud** automatically (tap 🔊 to hear it again).
