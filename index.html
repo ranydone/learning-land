@@ -7,14 +7,24 @@
   <title>Learning Land 🌈</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=2" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>" />
 </head>
 <body>
   <canvas id="confetti"></canvas>
 
+  <!-- WELCOME / DAILY CHECK-IN -->
+  <main id="welcome" class="screen active">
+    <div class="welcome-card">
+      <div id="welcomeEmoji" class="welcome-emoji">🌈</div>
+      <h1 id="welcomeTitle" class="welcome-title">Welcome!</h1>
+      <p id="welcomeSub" class="welcome-sub"></p>
+      <div id="welcomeBody" class="welcome-body"></div>
+    </div>
+  </main>
+
   <!-- HOME SCREEN -->
-  <main id="home" class="screen active">
+  <main id="home" class="screen">
     <header class="topbar">
       <div class="hello">
         <span class="wave">👋</span>
@@ -144,10 +154,10 @@
     </div>
   </main>
 
-  <script src="js/rng.js"></script>
-  <script src="js/content.js"></script>
-  <script src="js/stories.js"></script>
-  <script src="js/generators.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/rng.js?v=2"></script>
+  <script src="js/content.js?v=2"></script>
+  <script src="js/stories.js?v=2"></script>
+  <script src="js/generators.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
 </body>
 </html>

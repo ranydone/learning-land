@@ -23,6 +23,26 @@ body{
 .screen{display:none; min-height:100vh; padding:18px clamp(14px,4vw,40px) 30px; max-width:980px; margin:0 auto; flex-direction:column}
 .screen.active{display:flex}
 
+/* ---------- WELCOME / CHECK-IN ---------- */
+.welcome-card{margin:auto; background:var(--card); border-radius:var(--radius); padding:clamp(24px,7vw,46px);
+  text-align:center; box-shadow:var(--shadow); max-width:560px; width:100%}
+.welcome-emoji{font-size:clamp(60px,16vw,110px); line-height:1; animation:bounce 1.6s ease-in-out infinite}
+.welcome-title{font-size:clamp(24px,6.5vw,40px); margin:8px 0 2px; color:var(--purple); font-weight:800; line-height:1.15}
+.welcome-sub{font-size:clamp(18px,5vw,26px); color:var(--ink-soft); font-weight:600; margin:4px 0 16px}
+.welcome-body{display:flex; flex-direction:column; gap:14px; align-items:center; margin-top:8px}
+.name-input{font-family:inherit; font-weight:800; font-size:clamp(22px,6vw,32px); text-align:center; color:var(--ink);
+  border:4px dashed var(--pink); border-radius:18px; padding:12px 18px; width:100%; max-width:340px; outline:none; background:#fff7fb}
+.name-input:focus{border-color:var(--purple)}
+.welcome-options{display:flex; gap:14px; flex-wrap:wrap; justify-content:center; width:100%}
+.welcome-opt{font-family:inherit; font-weight:800; font-size:clamp(18px,5vw,24px); border:none; border-radius:999px;
+  padding:16px 22px; cursor:pointer; color:#fff; box-shadow:0 7px 0 rgba(0,0,0,.15); flex:1 1 150px; min-width:140px}
+.welcome-opt:active{transform:translateY(5px)}
+.welcome-opt.green{background:linear-gradient(135deg,var(--green),#06d6a0)}
+.welcome-opt.blue{background:linear-gradient(135deg,var(--blue),var(--purple))}
+.welcome-opt.pink{background:linear-gradient(135deg,var(--pink),#9b5de5)}
+.welcome-opt.orange{background:linear-gradient(135deg,var(--orange),#ffb703)}
+.welcome-start{background:linear-gradient(135deg,var(--green),#06d6a0); font-size:clamp(20px,5.5vw,26px); max-width:340px; width:100%}
+
 /* ---------- HOME ---------- */
 .topbar{display:flex; justify-content:space-between; align-items:center; gap:10px}
 .hello{font-size:clamp(18px,4.5vw,26px); font-weight:700; display:flex; align-items:center; gap:8px}

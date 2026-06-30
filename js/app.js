@@ -466,7 +466,92 @@
     else { ctx.clearRect(0, 0, cv.width, cv.height); raf = null; }
   }
 
+  /* ---------- WELCOME / DAILY CHECK-IN ---------- */
+  let welcomeTimer = null;
+
+  function setWelcome(opts) {
+    $('welcomeEmoji').textContent = opts.emoji;
+    $('welcomeTitle').textContent = opts.title;
+    $('welcomeSub').textContent = opts.sub || '';
+    const body = $('welcomeBody');
+    body.innerHTML = '';
+    return body;
+  }
+
+  function addWelcomeOption(body, label, color, fn) {
+    let row = body.querySelector('.welcome-options');
+    if (!row) { row = document.createElement('div'); row.className = 'welcome-options'; body.appendChild(row); }
+    const b = document.createElement('button');
+    b.className = 'welcome-opt ' + color;
+    b.textContent = label;
+    b.onclick = fn;
+    row.appendChild(b);
+  }
+
+  // Show a short warm reaction, then move on.
+  function reactThen(emoji, text, next) {
+    setWelcome({ emoji: emoji, title: text });
+    speak(text);
+    if (welcomeTimer) clearTimeout(welcomeTimer);
+    welcomeTimer = setTimeout(next, 1600);
+  }
+
+  function startWelcome() {
+    show('welcome');
+    stepName();
+  }
+
+  function stepName() {
+    const body = setWelcome({ emoji: '🌈', title: 'Hello there!', sub: 'What is your name?' });
+    const input = document.createElement('input');
+    input.className = 'name-input';
+    input.type = 'text';
+    input.maxLength = 14;
+    input.setAttribute('autocomplete', 'off');
+    input.placeholder = 'Type your name';
+    input.value = (state.name && state.name !== 'Star') ? state.name : '';
+    const btn = document.createElement('button');
+    btn.className = 'welcome-opt welcome-start';
+    btn.textContent = 'Start ▶️';
+    const go = () => {
+      const n = input.value.trim();
+      if (n) { state.name = n.slice(0, 14); localStorage.setItem('ll_name', state.name); }
+      if (!state.name) state.name = 'Star';
+      stepMood();
+    };
+    btn.onclick = go;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+    body.appendChild(input);
+    body.appendChild(btn);
+    setTimeout(() => { try { input.focus(); } catch (e) {} }, 120);
+    speak('Hello! What is your name?');
+  }
+
+  function stepMood() {
+    const body = setWelcome({ emoji: '😊', title: 'Hi, ' + state.name + '!', sub: 'How are you today?' });
+    addWelcomeOption(body, '😊 Good', 'green', () => reactThen('🎉', 'Yay! I am so happy! Let us play!', stepSchool));
+    addWelcomeOption(body, '🤒 Not feeling well', 'pink', () => reactThen('💖', 'Aww, I hope you feel better soon. Let us play gently.', stepSchool));
+    speak('Hi ' + state.name + '! How are you today?');
+  }
+
+  function stepSchool() {
+    const body = setWelcome({ emoji: '🏫', title: state.name + ', did you go to school today?' });
+    addWelcomeOption(body, '👍 Yes', 'blue', () => reactThen('🌟', 'Great! Learning is so much fun!', stepReady));
+    addWelcomeOption(body, '👋 No', 'orange', () => reactThen('🤗', 'That is okay! We will learn together today!', stepReady));
+    speak(state.name + ', did you go to school today?');
+  }
+
+  function stepReady() {
+    const body = setWelcome({ emoji: '🎈', title: "Let's go have some fun!" });
+    const btn = document.createElement('button');
+    btn.className = 'welcome-opt welcome-start';
+    btn.textContent = "▶️ Let's Go!";
+    btn.onclick = () => { initHome(); show('home'); burst(); speak('Hi ' + state.name + '! Let us learn and play!'); };
+    body.appendChild(btn);
+    speak("Let's go have some fun!");
+  }
+
   /* ---------- go ---------- */
   initHome();
-  show('home');
+  startWelcome();
 })();
