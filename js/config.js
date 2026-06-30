@@ -12,13 +12,14 @@
 window.APP_CONFIG = {
   signupEndpoint: '', // e.g. 'https://script.google.com/macros/s/AKfy.../exec'
 
-  // Paste your Firebase web app config object here (from Firebase console).
+  // Firebase web app config (from Firebase console).
   firebase: {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    storageBucket: '',
-    messagingSenderId: '',
-    appId: ''
+    apiKey: 'AIzaSyB6_hMtoGnUbljYEahcOkR-hVylPDPoOvU',
+    authDomain: 'pogogy.firebaseapp.com',
+    projectId: 'pogogy',
+    storageBucket: 'pogogy.firebasestorage.app',
+    messagingSenderId: '273851741331',
+    appId: '1:273851741331:web:a995ff18095cf799140966',
+    measurementId: 'G-8RDTJBKCWP'
   }
 };
