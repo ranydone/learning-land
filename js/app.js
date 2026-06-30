@@ -77,11 +77,10 @@
 
   // Fill the home-screen voice dropdown with the device's English voices.
   function populateVoicePicker() {
-    const sel = $('voiceSelect');
+    const sel = $('voiceSelectGlobal');
     if (!sel) return;
     const vs = englishVoices();
-    if (!vs.length) { sel.style.display = 'none'; return; }
-    sel.style.display = '';
+    if (!vs.length) { return; }
     const cur = voice ? voice.voiceURI : '';
     sel.innerHTML = vs.map(v => {
       const nice = v.name.replace(/microsoft|online|\(natural\)|desktop/gi, '').replace(/\s+/g, ' ').trim();
@@ -110,7 +109,6 @@
     $('todayStars').textContent = getTodayStars();
     const d = new Date();
     $('dateLabel').textContent = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-    updateMuteBtn();
 
     $('nameBtn').onclick = () => {
       const n = prompt("What is your name? 😊", state.name);
@@ -121,30 +119,42 @@
         speak('Hi ' + state.name);
       }
     };
-    $('muteBtn').onclick = () => {
-      state.muted = !state.muted;
-      localStorage.setItem('ll_muted', state.muted ? '1' : '0');
-      if (state.muted && 'speechSynthesis' in window) speechSynthesis.cancel();
-      updateMuteBtn();
-      if (!state.muted) speak('Sound is on');
-    };
-    populateVoicePicker();
-    $('voiceSelect').onchange = (e) => {
-      const vs = speechSynthesis.getVoices();
-      voice = vs.find(v => v.voiceURI === e.target.value) || voice;
-      if (voice) localStorage.setItem('ll_voice', voice.voiceURI);
-      // play a friendly sample so the choice is obvious
-      const sample = 'Hi ' + state.name + '! Let us learn and have fun together!';
-      const wasMuted = state.muted; state.muted = false; speak(sample); state.muted = wasMuted;
-    };
     document.querySelectorAll('.tile').forEach(t => {
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
           : startGame(t.dataset.game));
     });
   }
-  function updateMuteBtn() {
-    $('muteBtn').textContent = state.muted ? '🔇 Sound: Off' : '🔊 Sound: On';
+
+  /* ---------- global sound dock (on every screen) ---------- */
+  function updateMuteUI() {
+    const fab = $('muteFab');
+    if (fab) fab.textContent = state.muted ? '🔇' : '🔊';
+  }
+  function toggleMute() {
+    state.muted = !state.muted;
+    localStorage.setItem('ll_muted', state.muted ? '1' : '0');
+    if (state.muted && 'speechSynthesis' in window) speechSynthesis.cancel();
+    updateMuteUI();
+    if (!state.muted) speak('Sound is on');
+  }
+  function setupSoundDock() {
+    updateMuteUI();
+    populateVoicePicker();
+    $('muteFab').onclick = toggleMute;
+    $('voiceFab').onclick = () => {
+      const s = $('voiceSelectGlobal');
+      if (s) s.hidden = !s.hidden;
+    };
+    const sel = $('voiceSelectGlobal');
+    if (sel) sel.onchange = (e) => {
+      const vs = speechSynthesis.getVoices();
+      voice = vs.find(v => v.voiceURI === e.target.value) || voice;
+      if (voice) localStorage.setItem('ll_voice', voice.voiceURI);
+      const wasMuted = state.muted; state.muted = false;
+      speak('Hi ' + state.name + '! This is my voice. Let us have fun!');
+      state.muted = wasMuted;
+    };
   }
 
   /* ---------- game ---------- */
@@ -488,12 +498,22 @@
     row.appendChild(b);
   }
 
-  // Show a short warm reaction, then move on.
+  // Show a warm reaction, give her time to enjoy it, then move on.
+  // Auto-advances after a relaxed pause, or she can tap "Next" to continue sooner.
   function reactThen(emoji, text, next) {
-    setWelcome({ emoji: emoji, title: text });
+    const body = setWelcome({ emoji: emoji, title: text });
     speak(text);
+    const go = () => {
+      if (welcomeTimer) { clearTimeout(welcomeTimer); welcomeTimer = null; }
+      next();
+    };
+    const btn = document.createElement('button');
+    btn.className = 'welcome-opt blue';
+    btn.textContent = 'Next ▶️';
+    btn.onclick = go;
+    body.appendChild(btn);
     if (welcomeTimer) clearTimeout(welcomeTimer);
-    welcomeTimer = setTimeout(next, 1600);
+    welcomeTimer = setTimeout(go, 4500);   // relaxed pause (was too quick before)
   }
 
   function startWelcome() {
@@ -552,6 +572,7 @@
   }
 
   /* ---------- go ---------- */
+  setupSoundDock();
   initHome();
   startWelcome();
 })();

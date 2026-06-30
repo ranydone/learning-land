@@ -7,11 +7,18 @@
   <title>Learning Land 🌈</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=2" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>" />
 </head>
 <body>
   <canvas id="confetti"></canvas>
+
+  <!-- GLOBAL SOUND / VOICE CONTROL (on every screen) -->
+  <div id="soundDock" class="sound-dock">
+    <select id="voiceSelectGlobal" class="dock-voice" aria-label="Choose voice" hidden></select>
+    <button id="voiceFab" class="fab" title="Choose voice">🗣️</button>
+    <button id="muteFab" class="fab" title="Sound on/off">🔊</button>
+  </div>
 
   <!-- WELCOME / DAILY CHECK-IN -->
   <main id="welcome" class="screen active">
@@ -83,10 +90,6 @@
     </section>
 
     <footer class="home-foot">
-      <button id="muteBtn" class="ghost-btn" title="Sound on/off">🔊 Sound: On</button>
-      <label class="voice-pick" title="Choose the reading voice">🗣️
-        <select id="voiceSelect" aria-label="Choose voice"></select>
-      </label>
       <span class="made">Made with ❤️ for you</span>
     </footer>
   </main>
@@ -154,10 +157,10 @@
     </div>
   </main>
 
-  <script src="js/rng.js?v=2"></script>
-  <script src="js/content.js?v=2"></script>
-  <script src="js/stories.js?v=2"></script>
-  <script src="js/generators.js?v=2"></script>
-  <script src="js/app.js?v=2"></script>
+  <script src="js/rng.js?v=3"></script>
+  <script src="js/content.js?v=3"></script>
+  <script src="js/stories.js?v=3"></script>
+  <script src="js/generators.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>
