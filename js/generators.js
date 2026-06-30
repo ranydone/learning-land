@@ -332,6 +332,68 @@
     all(R) { return R.pick([this.pattern, this.pattern, this.oddOneOut, this.sizeOrder, this.sequenceOrder, this.sorting]).call(this, R); },
   };
 
+  /* ================= ADD UP (basic addition) ================= */
+  const ADD = {
+    pool: [
+      { e: '🍎', n: 'apples' }, { e: '⭐', n: 'stars' }, { e: '🎈', n: 'balloons' },
+      { e: '🍓', n: 'strawberries' }, { e: '🐥', n: 'chicks' }, { e: '🌸', n: 'flowers' },
+      { e: '🍪', n: 'cookies' }, { e: '🐠', n: 'fish' }, { e: '🧁', n: 'cupcakes' }, { e: '🚗', n: 'cars' },
+    ],
+    // Concrete: show two groups of the SAME object so she can count them all.
+    concrete(R) {
+      const a = R.int(1, 5), b = R.int(1, 5);        // sums stay within 10
+      const ans = a + b;
+      const it = R.pick(this.pool);
+      const display =
+        '<div class="add-objects">' + repeatEmoji(it.e, a) +
+        ' <span class="plus">➕</span> ' + repeatEmoji(it.e, b) + '</div>' +
+        '<div class="add-sentence">' + a + ' <b>+</b> ' + b + ' <b>=</b> ?</div>';
+      return {
+        module: 'addition',
+        prompt: 'How many in all?',
+        speak: `Count them all! ${a} ${it.n} plus ${b} ${it.n}. How many ${it.n} all together?`,
+        display: { kind: 'emojis', value: display },
+        options: numberOptions(R, ans, 0, 12),
+      };
+    },
+    // Simple word problem with countable pictures.
+    story(R) {
+      const a = R.int(1, 4), b = R.int(1, 3);
+      const ans = a + b;
+      const it = R.pick(this.pool);
+      const display =
+        '<div class="add-objects">' + repeatEmoji(it.e, a) +
+        ' <span class="plus">➕</span> ' + repeatEmoji(it.e, b) + '</div>' +
+        '<div class="add-sentence">' + a + ' <b>+</b> ' + b + ' <b>=</b> ?</div>';
+      const q = `You have ${a} ${it.n}. You get ${b} more. How many now?`;
+      return {
+        module: 'addition',
+        prompt: q,
+        speak: q,
+        display: { kind: 'emojis', value: display },
+        options: numberOptions(R, ans, 0, 12),
+      };
+    },
+    // "Add one more" — the easiest, builds the +1 idea.
+    plusOne(R) {
+      const a = R.int(1, 8);
+      const ans = a + 1;
+      const it = R.pick(this.pool);
+      const display =
+        '<div class="add-objects">' + repeatEmoji(it.e, a) +
+        ' <span class="plus">➕</span> ' + it.e + '</div>' +
+        '<div class="add-sentence">' + a + ' <b>+</b> 1 <b>=</b> ?</div>';
+      return {
+        module: 'addition',
+        prompt: 'One more! How many now?',
+        speak: `${a} ${it.n}, and one more. How many now?`,
+        display: { kind: 'emojis', value: display },
+        options: numberOptions(R, ans, 0, 12),
+      };
+    },
+    all(R) { return R.pick([this.concrete, this.concrete, this.concrete, this.story, this.plusOne]).call(this, R); },
+  };
+
   // Build a session of N questions for a given module key.
   function buildSession(moduleKey, R, n) {
     const out = [];
@@ -351,8 +413,9 @@
       case 'alphabets': return ABC.all(R);
       case 'quiz': return QUIZ.all(R);
       case 'logic': return LOGIC.all(R);
+      case 'addition': return ADD.all(R);
       case 'daily': {
-        const m = R.pick([NUM, ABC, QUIZ, LOGIC]);
+        const m = R.pick([NUM, ABC, QUIZ, LOGIC, ADD]);
         return m.all(R);
       }
       default: return NUM.all(R);
