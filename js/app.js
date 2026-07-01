@@ -35,17 +35,19 @@
     const n = (v.name || '').toLowerCase();
     const lang = (v.lang || '').toLowerCase();
     let s = 0;
+    // Indian English is the preferred DEFAULT — always pick it when available.
+    if (lang.startsWith('en-in')) s += 1000;
+    else if (lang.startsWith('en-us')) s += 45;
+    else if (lang.startsWith('en-gb')) s += 40;
+    else if (lang.startsWith('en')) s += 20;
+    else s -= 200;                                             // non-English: avoid
+    // Quality/warmth ranking WITHIN a language.
     if (/natural|neural|online/.test(n)) s += 120;            // Microsoft/Edge neural voices
     if (/google/.test(n)) s += 60;                             // Chrome's Google voices (clear)
-    if (/aria|jenny|libby|sonia|natasha|clara|emma|ava|allison|samantha|neerja|asha|swara/.test(n)) s += 55;
+    if (/aria|jenny|libby|sonia|natasha|clara|emma|ava|allison|samantha|neerja|asha|swara|heera/.test(n)) s += 55;
     if (/female|woman|girl/.test(n)) s += 25;                  // warmer for a young child
-    if (/zira|heera/.test(n)) s += 10;                         // common Windows female (a bit robotic)
-    if (/david|mark|guy|ravi|prabhat|george/.test(n)) s -= 20; // default male voices
-    if (lang.startsWith('en-in')) s += 22;                     // familiar Indian-English accent
-    else if (lang.startsWith('en-gb')) s += 16;
-    else if (lang.startsWith('en-us')) s += 18;
-    else if (lang.startsWith('en')) s += 8;
-    else s -= 40;                                              // non-English: avoid
+    if (/zira|heera/.test(n)) s += 10;
+    if (/david|mark|guy|ravi|prabhat|george/.test(n)) s -= 30; // default male voices
     return s;
   }
 
