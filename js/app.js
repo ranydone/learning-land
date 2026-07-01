@@ -509,8 +509,10 @@
     if (user) {
       state.user = user;
       loadProfile(user).then((prof) => {
+        if (!prof || !prof.childName) prof = cachedProfile(user.uid); // same-device fallback
         if (prof && prof.childName) {
           applyProfile(prof);
+          cacheProfile(user.uid, prof);
           if (currentScreen() === 'welcome') stepMood();
           else initHome();
         } else {
@@ -542,6 +544,15 @@
       .then((doc) => (doc.exists ? doc.data() : null))
       .catch(() => null);
     return withTimeout(get, 6000, null); // never hang the welcome screen
+  }
+
+  // Per-account cache so a returning user on the SAME device skips setup even
+  // if Firestore is unreachable/locked. (Cloud sync still needs Firestore.)
+  function cacheProfile(uid, prof) {
+    try { localStorage.setItem('ll_prof_' + uid, JSON.stringify(prof)); } catch (e) {}
+  }
+  function cachedProfile(uid) {
+    try { return JSON.parse(localStorage.getItem('ll_prof_' + uid) || 'null'); } catch (e) { return null; }
   }
 
   function applyProfile(prof) {
@@ -652,6 +663,7 @@
       localStorage.setItem('ll_name', state.name);
       localStorage.setItem('ll_school', school);
       state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school });
+      if (state.user) cacheProfile(state.user.uid, state.profile); // remember on this device
       saveProfile({ childName: state.name, school: school }); // fire-and-forget (offline-safe)
       stepMood(); // proceed immediately; never wait on the network
     };
