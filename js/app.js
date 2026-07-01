@@ -575,13 +575,24 @@
   }
 
   function showSignInError(err) {
+    const code = (err && err.code) ? err.code : 'unknown-error';
     const body = setWelcome({ emoji: '😕', title: 'Sign in did not work', sub: 'Please try again.' });
-    const b = document.createElement('button');
-    b.className = 'welcome-opt blue';
-    b.textContent = '↩️ Back';
-    b.onclick = stepAuth;
-    body.appendChild(b);
-    console.warn('Google sign-in error:', err && err.code, err && err.message);
+    // show the real reason so a grown-up can fix the Firebase setting
+    const detail = document.createElement('p');
+    detail.className = 'welcome-note';
+    detail.textContent = '⚠️ ' + code;
+    body.appendChild(detail);
+    const retry = document.createElement('button');
+    retry.className = 'welcome-opt blue';
+    retry.textContent = '🔵 Try Google again';
+    retry.onclick = signInGoogle;
+    const guest = document.createElement('button');
+    guest.className = 'welcome-opt orange';
+    guest.textContent = '🎈 Play without signing in';
+    guest.onclick = stepEntry;
+    body.appendChild(retry);
+    body.appendChild(guest);
+    console.warn('Google sign-in error:', code, err && err.message);
   }
 
   function doSignOut() {
