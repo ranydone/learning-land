@@ -36,6 +36,11 @@ body{
 .welcome-card{margin:auto; background:var(--card); border-radius:var(--radius); padding:clamp(24px,7vw,46px);
   text-align:center; box-shadow:var(--shadow); max-width:560px; width:100%}
 .welcome-emoji{font-size:clamp(60px,16vw,110px); line-height:1; animation:bounce 1.6s ease-in-out infinite}
+.welcome-emoji.is-logo{font-size:0; animation:none}
+.welcome-emoji.is-logo svg{width:clamp(140px,40vw,220px); height:auto; display:inline-block; filter:drop-shadow(0 6px 6px rgba(120,80,180,.18))}
+.welcome-home{position:fixed; top:14px; left:14px; z-index:6}
+.home-logo{display:flex; justify-content:center; margin-bottom:-2px}
+.home-logo svg{width:clamp(120px,30vw,180px); height:auto; filter:drop-shadow(0 5px 5px rgba(120,80,180,.18))}
 .welcome-title{font-size:clamp(24px,6.5vw,40px); margin:8px 0 2px; color:var(--purple); font-weight:800; line-height:1.15}
 .welcome-sub{font-size:clamp(18px,5vw,26px); color:var(--ink-soft); font-weight:600; margin:4px 0 16px}
 .welcome-body{display:flex; flex-direction:column; gap:14px; align-items:center; margin-top:8px}

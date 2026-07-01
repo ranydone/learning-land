@@ -16,7 +16,7 @@ Every time someone enters, a new row appears in your Google Sheet:
 which sharing works best.
 
 ## Step 1 — Make the Sheet
-1. Go to <https://sheets.new> and create a sheet. Name it e.g. **Learning Land Signups**.
+1. Go to <https://sheets.new> and create a sheet. Name it e.g. **Pogogy Signups**.
 2. In row 1, type these headers (optional but tidy):
    `Time` `Child Name` `School` `Parent Contact` `Source` `Device`
 

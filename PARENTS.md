@@ -1,6 +1,6 @@
 # 👨‍👩‍👧 Parent & Teacher Guide
 
-This guide explains the **learning design** behind Learning Land and gives you a
+This guide explains the **learning design** behind Pogogy and gives you a
 ready-made **30-minute daily routine** for a KG1 / 5-year-old.
 
 ## 🎯 Learning goals (mapped to KG1)

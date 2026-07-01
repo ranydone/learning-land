@@ -1,4 +1,4 @@
-# 🌈 Learning Land
+# 🌈 Pogogy
 
 A colorful, **voice-guided learning website for a 5-year-old (KG1)**. Content
 **refreshes every day** so there is something new to play with each morning — no

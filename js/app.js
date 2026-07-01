@@ -16,6 +16,15 @@
   };
   const fb = { enabled: false, auth: null, db: null, ready: false };
 
+  // Full rainbow arch used as the Pogogy logo (welcome screen).
+  const RAINBOW_SVG = '<svg viewBox="0 0 100 62" fill="none" stroke-width="6.5" stroke-linecap="round">'
+    + '<path d="M8 55 A42 42 0 0 1 92 55" stroke="#ff4d6d"/>'
+    + '<path d="M16 55 A34 34 0 0 1 84 55" stroke="#ff9f1c"/>'
+    + '<path d="M24 55 A26 26 0 0 1 76 55" stroke="#ffd60a"/>'
+    + '<path d="M32 55 A18 18 0 0 1 68 55" stroke="#2ec4b6"/>'
+    + '<path d="M40 55 A10 10 0 0 1 60 55" stroke="#3a86ff"/>'
+    + '</svg>';
+
   /* ---------- voice ---------- */
   let voice = null;
   const hasTTS = 'speechSynthesis' in window;
@@ -632,7 +641,7 @@
   }
 
   function stepAuth() {
-    const body = setWelcome({ emoji: '🌈', title: 'Welcome to Learning Land!', sub: 'Sign in to save your stars ⭐' });
+    const body = setWelcome({ emoji: '🌈', title: 'Welcome to Pogogy!', sub: 'Sign in to save your stars ⭐' });
     const g = document.createElement('button');
     g.className = 'welcome-opt blue';
     g.textContent = '🔵 Sign in with Google';
@@ -713,12 +722,15 @@
   }
 
   $('profileHome').onclick = () => { initHome(); show('home'); };
+  $('welcomeHome').onclick = () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
 
   /* ---------- WELCOME / DAILY CHECK-IN ---------- */
   let welcomeTimer = null;
 
   function setWelcome(opts) {
-    $('welcomeEmoji').textContent = opts.emoji;
+    const el = $('welcomeEmoji');
+    if (opts.emoji === '🌈') { el.innerHTML = RAINBOW_SVG; el.classList.add('is-logo'); }
+    else { el.textContent = opts.emoji; el.classList.remove('is-logo'); }
     $('welcomeTitle').textContent = opts.title;
     $('welcomeSub').textContent = opts.sub || '';
     const body = $('welcomeBody');
