@@ -524,11 +524,24 @@
     }
   }
 
+  // Resolve a promise but never wait forever (Firestore can hang if the DB
+  // isn't created yet) — fall back to `fallback` after `ms`.
+  function withTimeout(promise, ms, fallback) {
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = (v) => { if (!done) { done = true; resolve(v); } };
+      const t = setTimeout(() => finish(fallback), ms);
+      promise.then((v) => { clearTimeout(t); finish(v); })
+        .catch(() => { clearTimeout(t); finish(fallback); });
+    });
+  }
+
   function loadProfile(user) {
     if (!fb.enabled) return Promise.resolve(null);
-    return fb.db.collection('users').doc(user.uid).get()
+    const get = fb.db.collection('users').doc(user.uid).get()
       .then((doc) => (doc.exists ? doc.data() : null))
       .catch(() => null);
+    return withTimeout(get, 6000, null); // never hang the welcome screen
   }
 
   function applyProfile(prof) {
@@ -638,10 +651,9 @@
       state.name = child.slice(0, 14);
       localStorage.setItem('ll_name', state.name);
       localStorage.setItem('ll_school', school);
-      saveProfile({ childName: state.name, school: school }).then(() => {
-        state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school });
-        stepMood();
-      });
+      state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school });
+      saveProfile({ childName: state.name, school: school }); // fire-and-forget (offline-safe)
+      stepMood(); // proceed immediately; never wait on the network
     };
     body.appendChild(nameIn);
     body.appendChild(schoolIn);
