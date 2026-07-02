@@ -570,6 +570,7 @@
     state.profile = prof;
     if (prof.childName) { state.name = prof.childName; localStorage.setItem('ll_name', state.name); }
     if (prof.school) localStorage.setItem('ll_school', prof.school);
+    if (prof.class) localStorage.setItem('ll_class', prof.class);
     if (typeof prof.points === 'number') localStorage.setItem('ll_points_total', String(prof.points));
   }
 
@@ -662,24 +663,28 @@
     const body = setWelcome({ emoji: '🧒', title: 'Set up your profile', sub: 'Tell us about the child' });
     const nameIn = entryInput("Child's name", guess, 14);
     const schoolIn = entryInput('School name', localStorage.getItem('ll_school') || '', 40);
+    const classSel = entryClassSelect(localStorage.getItem('ll_class'));
     const btn = document.createElement('button');
     btn.className = 'welcome-opt welcome-start';
     btn.textContent = 'Save & Play 🎉';
     btn.onclick = () => {
       const child = nameIn.value.trim();
       const school = schoolIn.value.trim();
+      const cls = classSel.value;
       if (!child) return nudge(nameIn);
       if (!school) return nudge(schoolIn);
       state.name = child.slice(0, 14);
       localStorage.setItem('ll_name', state.name);
       localStorage.setItem('ll_school', school);
-      state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school });
+      localStorage.setItem('ll_class', cls);
+      state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school, class: cls });
       if (state.user) cacheProfile(state.user.uid, state.profile); // remember on this device
-      saveProfile({ childName: state.name, school: school }); // fire-and-forget (offline-safe)
+      saveProfile({ childName: state.name, school: school, class: cls }); // fire-and-forget (offline-safe)
       stepMood(); // proceed immediately; never wait on the network
     };
     body.appendChild(nameIn);
     body.appendChild(schoolIn);
+    body.appendChild(classSel);
     body.appendChild(btn);
     setTimeout(() => { try { nameIn.focus(); } catch (e) {} }, 120);
     speak('Please type the child name and school.');
@@ -707,7 +712,8 @@
     const name = (state.name && state.name !== 'Star') ? state.name : (localStorage.getItem('ll_name') || 'Little Star');
     $('profileName').textContent = name;
     const school = (state.profile && state.profile.school) || localStorage.getItem('ll_school') || '';
-    $('profileSchool').textContent = school ? '🏫 ' + school : '';
+    const cls = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || '';
+    $('profileSchool').textContent = (school ? '🏫 ' + school : '') + (cls ? (school ? '  ·  ' : '') + '🎓 ' + cls : '');
     $('profileEmail').textContent = signedIn ? (state.user.email || '') : '';
     const photo = signedIn ? state.user.photoURL : '';
     if (photo) { $('profilePhoto').src = photo; $('profilePhoto').hidden = false; $('profileAvatar').hidden = true; }
@@ -805,6 +811,19 @@
     setTimeout(() => el.classList.remove('shake-input'), 450);
   }
 
+  // Class / grade dropdown. Only PP1 for now; add more options here as content grows.
+  const CLASS_OPTIONS = [{ v: 'PP1', t: 'PP1 (Pre-Primary 1)' }];
+  function entryClassSelect(current) {
+    const sel = document.createElement('select');
+    sel.className = 'name-input entry-field entry-select';
+    sel.setAttribute('aria-label', 'Class');
+    const cur = current || CLASS_OPTIONS[0].v;
+    sel.innerHTML = CLASS_OPTIONS
+      .map((o) => '<option value="' + o.v + '"' + (o.v === cur ? ' selected' : '') + '>' + o.t + '</option>')
+      .join('');
+    return sel;
+  }
+
   // "Enter to have fun" sign-in: collects name + school (+ optional parent contact).
   function stepEntry() {
     const body = setWelcome({ emoji: '🎉', title: 'Welcome!', sub: "Let's have some fun!" });
@@ -813,6 +832,7 @@
     note.textContent = '👩‍👧 Grown-up: please fill this in';
     const nameIn = entryInput("Child's name", (state.name && state.name !== 'Star') ? state.name : '', 14);
     const schoolIn = entryInput('School name', localStorage.getItem('ll_school') || '', 40);
+    const classSel = entryClassSelect(localStorage.getItem('ll_class'));
     const parentIn = entryInput('Parent phone or email (optional)', localStorage.getItem('ll_parent') || '', 60);
     const btn = document.createElement('button');
     btn.className = 'welcome-opt welcome-start';
@@ -820,17 +840,19 @@
     const go = () => {
       const child = nameIn.value.trim();
       const school = schoolIn.value.trim();
+      const cls = classSel.value;
       const parent = parentIn.value.trim();
       if (!child) return nudge(nameIn);
       if (!school) return nudge(schoolIn);
       state.name = child.slice(0, 14);
       localStorage.setItem('ll_name', state.name);
       localStorage.setItem('ll_school', school);
+      localStorage.setItem('ll_class', cls);
       localStorage.setItem('ll_parent', parent);
       // Log each new/changed signup once per device (don't spam on every visit).
-      const sig = child + '|' + school + '|' + parent;
+      const sig = child + '|' + school + '|' + cls + '|' + parent;
       if (localStorage.getItem('ll_signup_sig') !== sig) {
-        recordSignup({ child: child, school: school, parent: parent, ts: new Date().toISOString(), ref: document.referrer || '', ua: navigator.userAgent });
+        recordSignup({ child: child, school: school, class: cls, parent: parent, ts: new Date().toISOString(), ref: document.referrer || '', ua: navigator.userAgent });
         localStorage.setItem('ll_signup_sig', sig);
       }
       stepMood();
@@ -840,6 +862,7 @@
     body.appendChild(note);
     body.appendChild(nameIn);
     body.appendChild(schoolIn);
+    body.appendChild(classSel);
     body.appendChild(parentIn);
     body.appendChild(btn);
     setTimeout(() => { try { nameIn.focus(); } catch (e) {} }, 120);

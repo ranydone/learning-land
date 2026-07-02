@@ -8,9 +8,9 @@ fine — it just doesn't log anything.
 ## What you'll get
 Every time someone enters, a new row appears in your Google Sheet:
 
-| Time | Child Name | School | Parent Contact | Source (link) | Device |
-|------|------------|--------|----------------|---------------|--------|
-| 30 Jun 2026 09:10 | Aanya | Little Stars KG | 98xxxxxxx | wa.me/… | Android Chrome |
+| Time | Child Name | School | Class | Parent Contact | Source (link) | Device |
+|------|------------|--------|-------|----------------|---------------|--------|
+| 30 Jun 2026 09:10 | Aanya | Little Stars KG | PP1 | 98xxxxxxx | wa.me/… | Android Chrome |
 
 "Source" shows where they clicked your link from (WhatsApp, etc.) so you can see
 which sharing works best.
@@ -18,7 +18,7 @@ which sharing works best.
 ## Step 1 — Make the Sheet
 1. Go to <https://sheets.new> and create a sheet. Name it e.g. **Pogogy Signups**.
 2. In row 1, type these headers (optional but tidy):
-   `Time` `Child Name` `School` `Parent Contact` `Source` `Device`
+   `Time` `Child Name` `School` `Class` `Parent Contact` `Source` `Device`
 
 ## Step 2 — Add the script
 1. In the Sheet menu: **Extensions → Apps Script**.
@@ -32,7 +32,7 @@ function doPost(e) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('Signups') || ss.getSheets()[0];
     var d = JSON.parse(e.postData.contents);
-    sheet.appendRow([ new Date(), d.child || '', d.school || '', d.parent || '', d.ref || '', d.ua || '' ]);
+    sheet.appendRow([ new Date(), d.child || '', d.school || '', d.class || '', d.parent || '', d.ref || '', d.ua || '' ]);
     return ContentService.createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
