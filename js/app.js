@@ -508,6 +508,10 @@
       fb.db = firebase.firestore();
       fb.enabled = true;
       try { fb.auth.useDeviceLanguage(); } catch (e) {}
+      // Keep the Google session across visits (survives reloads/closing the tab).
+      try { fb.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); } catch (e) {}
+      // Complete any redirect-based sign-in (mobile browsers that block popups).
+      try { fb.auth.getRedirectResult().catch(function () {}); } catch (e) {}
       fb.auth.onAuthStateChanged(handleAuthChange);
     } catch (e) { console.warn('Firebase init skipped:', e && e.message); }
   }
@@ -525,6 +529,7 @@
           applyProfile(prof);
           cacheProfile(user.uid, prof);
           if (currentScreen() === 'welcome') stepMood();
+          else if (currentScreen() === 'profile') renderProfile();
           else initHome();
         } else {
           if (currentScreen() !== 'welcome') show('welcome');
@@ -534,6 +539,7 @@
     } else {
       state.user = null; state.profile = null;
       if (currentScreen() === 'welcome') stepAuth();
+      else if (currentScreen() === 'profile') renderProfile();
     }
   }
 
