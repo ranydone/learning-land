@@ -619,6 +619,7 @@
   function showSignInError(err) {
     const code = (err && err.code) ? err.code : 'unknown-error';
     const body = setWelcome({ emoji: '😕', title: 'Sign in did not work', sub: 'Please try again.' });
+    $('welcomeHome').hidden = true; // sign-in required — no bypass
     // show the real reason so a grown-up can fix the Firebase setting
     const detail = document.createElement('p');
     detail.className = 'welcome-note';
@@ -628,12 +629,7 @@
     retry.className = 'welcome-opt blue';
     retry.textContent = '🔵 Try Google again';
     retry.onclick = signInGoogle;
-    const guest = document.createElement('button');
-    guest.className = 'welcome-opt orange';
-    guest.textContent = '🎈 Play without signing in';
-    guest.onclick = stepEntry;
     body.appendChild(retry);
-    body.appendChild(guest);
     console.warn('Google sign-in error:', code, err && err.message);
   }
 
@@ -645,28 +641,26 @@
 
   function stepLoading() {
     setWelcome({ emoji: '🌈', title: 'Just a moment…', sub: 'Getting things ready' });
+    $('welcomeHome').hidden = true; // don't allow bypass before auth is known
     if (welcomeFallbackTimer) clearTimeout(welcomeFallbackTimer);
     welcomeFallbackTimer = setTimeout(() => { if (!fb.ready) stepAuth(); }, 5000);
   }
 
   function stepAuth() {
-    const body = setWelcome({ emoji: '🌈', title: 'Welcome to Pogogy!', sub: 'Sign in to save your stars ⭐' });
+    const body = setWelcome({ emoji: '🌈', title: 'Welcome to Pogogy!', sub: 'Sign in to start playing ⭐' });
+    $('welcomeHome').hidden = true; // sign-in required — no bypass
     const g = document.createElement('button');
     g.className = 'welcome-opt blue';
     g.textContent = '🔵 Sign in with Google';
     g.onclick = signInGoogle;
-    const p = document.createElement('button');
-    p.className = 'welcome-opt orange';
-    p.textContent = '🎈 Play without signing in';
-    p.onclick = stepEntry;
     body.appendChild(g);
-    body.appendChild(p);
-    speak('Welcome! Ask a grown up to sign in with Google, or play without signing in.');
+    speak('Welcome to Pogogy! Please ask a grown up to sign in with Google.');
   }
 
   function stepProfileSetup(user) {
     const guess = (user && user.displayName ? user.displayName.split(' ')[0] : '') || (state.name !== 'Star' ? state.name : '');
     const body = setWelcome({ emoji: '🧒', title: 'Set up your profile', sub: 'Tell us about the child' });
+    $('welcomeHome').hidden = true; // finish the profile before entering
     const nameIn = entryInput("Child's name", guess, 14);
     const schoolIn = entryInput('School name', localStorage.getItem('ll_school') || '', 40);
     const classSel = entryClassSelect(localStorage.getItem('ll_class'));
@@ -747,6 +741,7 @@
     else { el.textContent = opts.emoji; el.classList.remove('is-logo'); }
     $('welcomeTitle').textContent = opts.title;
     $('welcomeSub').textContent = opts.sub || '';
+    $('welcomeHome').hidden = false; // shown by default; gate screens hide it
     const body = $('welcomeBody');
     body.innerHTML = '';
     return body;
