@@ -142,7 +142,8 @@
     document.querySelectorAll('.tile').forEach(t => {
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
-          : startGame(t.dataset.game));
+          : t.dataset.game === 'calendar' ? startCalendar()
+            : startGame(t.dataset.game));
     });
   }
 
@@ -458,6 +459,124 @@
 
   $('memHome').onclick = () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('memNew').onclick = () => startMemory();
+
+  /* ---------- DAYS/MONTHS SEQUENCE (drag & drop) ---------- */
+  const SEQ_DAYS = [['Mon', 'Monday'], ['Tue', 'Tuesday'], ['Wed', 'Wednesday'], ['Thu', 'Thursday'], ['Fri', 'Friday'], ['Sat', 'Saturday'], ['Sun', 'Sunday']];
+  const SEQ_MONTHS = [['Jan', 'January'], ['Feb', 'February'], ['Mar', 'March'], ['Apr', 'April'], ['May', 'May'], ['Jun', 'June'], ['Jul', 'July'], ['Aug', 'August'], ['Sep', 'September'], ['Oct', 'October'], ['Nov', 'November'], ['Dec', 'December']];
+  let seqSpeakText = '';
+
+  // Days sequence -> Months sequence -> the regular calendar quiz.
+  function startCalendar() {
+    sequenceActivity(SEQ_DAYS, 'days', 'week', function () {
+      sequenceActivity(SEQ_MONTHS, 'months', 'year', function () {
+        startGame('calendar');
+      });
+    });
+  }
+
+  // Pointer-based drag that also works as a simple tap (easier for little kids).
+  function makeSeqDraggable(tile, onAttempt) {
+    let dragging = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    tile.addEventListener('pointerdown', function (e) {
+      if (tile.disabled) return;
+      dragging = true; moved = false; sx = e.clientX; sy = e.clientY;
+      const r = tile.getBoundingClientRect(); ox = e.clientX - r.left; oy = e.clientY - r.top;
+      try { tile.setPointerCapture(e.pointerId); } catch (_) {}
+      tile.classList.add('dragging');
+      tile.style.width = r.width + 'px'; tile.style.height = r.height + 'px';
+      tile.style.position = 'fixed'; tile.style.left = r.left + 'px'; tile.style.top = r.top + 'px'; tile.style.zIndex = '1000';
+    });
+    tile.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 6) moved = true;
+      tile.style.left = (e.clientX - ox) + 'px'; tile.style.top = (e.clientY - oy) + 'px';
+    });
+    function end(e) {
+      if (!dragging) return; dragging = false;
+      tile.classList.remove('dragging');
+      let overSlots = false;
+      try { const sr = $('seqSlots').getBoundingClientRect(); if (e.clientY <= sr.bottom + 30) overSlots = true; } catch (_) {}
+      tile.style.position = ''; tile.style.left = ''; tile.style.top = ''; tile.style.zIndex = ''; tile.style.width = ''; tile.style.height = '';
+      if (!moved || overSlots) onAttempt(tile); // a tap, or dropped up near the slots, counts as an attempt
+    }
+    tile.addEventListener('pointerup', end);
+    tile.addEventListener('pointercancel', end);
+  }
+
+  function sequenceActivity(pairs, kind, unit, onDone) {
+    show('sequence');
+    const ordered = pairs.map(function (p) { return p[0]; });
+    const fullByShort = {}; pairs.forEach(function (p) { fullByShort[p[0]] = p[1]; });
+    const N = ordered.length;
+    let nextIndex = 0;
+
+    $('seqTitle').textContent = (kind === 'days' ? '📅 ' : '🗓️ ') + 'Put the ' + kind + ' in order!';
+    const feed = $('seqFeedback');
+    feed.className = 'feedback';
+    feed.textContent = 'Drag them into order — there are ' + N + ' ' + kind + '!';
+
+    const slotsEl = $('seqSlots'); slotsEl.innerHTML = '';
+    const slotEls = [];
+    for (let i = 0; i < N; i++) {
+      const s = document.createElement('div'); s.className = 'seq-slot';
+      s.innerHTML = '<span class="seq-num">' + (i + 1) + '</span>';
+      slotsEl.appendChild(s); slotEls.push(s);
+    }
+    const trayEl = $('seqTray'); trayEl.innerHTML = '';
+    const R = makeRNG('seq-' + kind + '-' + Date.now() + '-' + Math.random());
+    R.shuffle(ordered).forEach(function (short) {
+      const t = document.createElement('button');
+      t.className = 'seq-tile'; t.type = 'button';
+      t.textContent = short; t.dataset.item = short;
+      trayEl.appendChild(t);
+      makeSeqDraggable(t, attempt);
+    });
+    announce();
+
+    function announce() {
+      slotEls.forEach(function (s, i) { s.classList.toggle('active', i === nextIndex); });
+      if (nextIndex < N) {
+        seqSpeakText = (kind === 'days' ? 'Which day comes ' : 'Which month comes ') + (nextIndex === 0 ? 'first? ' : 'next? ') + fullByShort[ordered[nextIndex]];
+        speak(seqSpeakText);
+      }
+    }
+
+    function attempt(tile) {
+      if (tile.disabled) return;
+      const item = tile.dataset.item;
+      if (item === ordered[nextIndex]) {
+        const slot = slotEls[nextIndex];
+        slot.classList.remove('active'); slot.classList.add('filled'); slot.innerHTML = '';
+        tile.classList.add('placed'); tile.disabled = true;
+        slot.appendChild(tile);
+        nextIndex++;
+        if (nextIndex === N) finish(); else announce();
+      } else {
+        tile.classList.add('wrong'); setTimeout(function () { tile.classList.remove('wrong'); }, 450);
+        feed.className = 'feedback try';
+        feed.textContent = '🔄 Not yet — we need ' + fullByShort[ordered[nextIndex]];
+        seqSpeakText = 'Not yet. We need ' + fullByShort[ordered[nextIndex]];
+        speak(seqSpeakText);
+      }
+    }
+
+    function finish() {
+      addStars(1);
+      feed.className = 'feedback good';
+      feed.textContent = '🎉 Yay! There are ' + N + ' ' + kind + ' in a ' + unit + '!';
+      seqSpeakText = 'Well done! There are ' + N + ' ' + kind + ' in a ' + unit + '!';
+      speak(seqSpeakText);
+      burst();
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again seq-next';
+      btn.textContent = 'Next ▶️';
+      btn.onclick = function () { onDone(); };
+      trayEl.appendChild(btn);
+    }
+  }
+
+  $('seqHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  $('seqSpeak').onclick = function () { if (seqSpeakText) speak(seqSpeakText); };
 
   /* ---------- confetti ---------- */
   const cv = $('confetti'); const ctx = cv.getContext('2d');
