@@ -15,6 +15,7 @@ tablet or computer.
 | ⭐ **Daily Play** | A mixed set that is the *same all day, new each day* | A bit of everything |
 | 🔢 **Numbers** | Counting, comparing, sequencing, adding | "How many apples?", "Which is bigger?", "What comes next?", "1🍎 + 2🍏 = ?" |
 | ➕ **Add Up** | Basic addition (sums to 10) | Two groups of objects to count, shown with the number sentence ("3 + 5 = ?"), plus simple word problems and "one more". Read aloud as "count them all" |
+| 📅 **Days & Months** | Calendar sequence & totals | Days of the week (Mon–Sun) and months (Jan–Dec): what comes next/before, the missing one, which comes first, and how many days in a week / months in a year |
 | 🔤 **Alphabets** | Letter recognition & phonics | "Apple starts with…?", "Find the letter B", "What comes after C?" |
 | 🍎 **Fun Quiz** | World knowledge & reasoning | Animal sounds, "Which is a fruit?", odd-one-out, colors, real-life situations |
 | 🧠 **Think & Code** | Logic / early coding | Continue the pattern, odd one out, biggest/smallest, "what happens first?", more/fewer |

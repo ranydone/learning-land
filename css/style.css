@@ -100,6 +100,7 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .t-story{background:linear-gradient(135deg,#ff8fab,#ffb703)}
 .t-memory{background:linear-gradient(135deg,#00bbf9,#9b5de5)}
 .t-add{background:linear-gradient(135deg,#06d6a0,#118ab2)}
+.t-cal{background:linear-gradient(135deg,#f9844a,#f3722c)}
 .t-daily{grid-column:1/-1}
 
 .home-foot{margin-top:auto; padding-top:20px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}

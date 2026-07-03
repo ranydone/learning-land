@@ -394,6 +394,53 @@
     all(R) { return R.pick([this.concrete, this.concrete, this.concrete, this.story, this.plusOne]).call(this, R); },
   };
 
+  /* ================= DAYS & MONTHS (calendar) ================= */
+  const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const shortName = (s) => s.slice(0, 3);
+  function nameOptions(R, ans, all) {
+    return buildOptions(R, { label: ans }, all.filter((x) => x !== ans).map((x) => ({ label: x })));
+  }
+  const CAL = {
+    nextDay(R) {
+      const i = R.int(0, 6); const ans = DAYS[(i + 1) % 7];
+      return { module: 'calendar', prompt: `What day comes AFTER ${DAYS[i]}?`, speak: `What day comes after ${DAYS[i]}?`, display: { kind: 'huge', value: '📅' }, options: nameOptions(R, ans, DAYS) };
+    },
+    prevDay(R) {
+      const i = R.int(0, 6); const ans = DAYS[(i + 6) % 7];
+      return { module: 'calendar', prompt: `What day comes BEFORE ${DAYS[i]}?`, speak: `What day comes before ${DAYS[i]}?`, display: { kind: 'huge', value: '📅' }, options: nameOptions(R, ans, DAYS) };
+    },
+    missingDay(R) {
+      const i = R.int(0, 4); const seq = [DAYS[i], DAYS[i + 1], DAYS[i + 2]]; const ans = seq[1];
+      return { module: 'calendar', prompt: `Which day is MISSING?  ${shortName(seq[0])} → ❓ → ${shortName(seq[2])}`, speak: `${seq[0]}, blank, ${seq[2]}. Which day is missing?`, display: { kind: 'huge', value: '📅' }, options: nameOptions(R, ans, DAYS) };
+    },
+    firstDay(R) {
+      return { module: 'calendar', prompt: 'Which day comes FIRST in the week?', speak: 'Which day comes first in the week?', display: { kind: 'huge', value: '📅' }, options: nameOptions(R, 'Monday', DAYS) };
+    },
+    totalDays(R) {
+      return { module: 'calendar', prompt: 'How many days are in a WEEK?', speak: 'How many days are there in one week?', display: { kind: 'huge', value: '📅' }, options: numberOptions(R, 7, 4, 12) };
+    },
+    nextMonth(R) {
+      const i = R.int(0, 11); const ans = MONTHS[(i + 1) % 12];
+      return { module: 'calendar', prompt: `What month comes AFTER ${MONTHS[i]}?`, speak: `What month comes after ${MONTHS[i]}?`, display: { kind: 'huge', value: '🗓️' }, options: nameOptions(R, ans, MONTHS) };
+    },
+    prevMonth(R) {
+      const i = R.int(0, 11); const ans = MONTHS[(i + 11) % 12];
+      return { module: 'calendar', prompt: `What month comes BEFORE ${MONTHS[i]}?`, speak: `What month comes before ${MONTHS[i]}?`, display: { kind: 'huge', value: '🗓️' }, options: nameOptions(R, ans, MONTHS) };
+    },
+    missingMonth(R) {
+      const i = R.int(0, 9); const seq = [MONTHS[i], MONTHS[i + 1], MONTHS[i + 2]]; const ans = seq[1];
+      return { module: 'calendar', prompt: `Which month is MISSING?  ${shortName(seq[0])} → ❓ → ${shortName(seq[2])}`, speak: `${seq[0]}, blank, ${seq[2]}. Which month is missing?`, display: { kind: 'huge', value: '🗓️' }, options: nameOptions(R, ans, MONTHS) };
+    },
+    firstMonth(R) {
+      return { module: 'calendar', prompt: 'Which month comes FIRST in the year?', speak: 'Which month comes first in the year?', display: { kind: 'huge', value: '🗓️' }, options: nameOptions(R, 'January', MONTHS) };
+    },
+    totalMonths(R) {
+      return { module: 'calendar', prompt: 'How many months are in a YEAR?', speak: 'How many months are there in one year?', display: { kind: 'huge', value: '🗓️' }, options: numberOptions(R, 12, 9, 15) };
+    },
+    all(R) { return R.pick([this.nextDay, this.prevDay, this.missingDay, this.firstDay, this.totalDays, this.nextMonth, this.prevMonth, this.missingMonth, this.firstMonth, this.totalMonths]).call(this, R); },
+  };
+
   // Build a session of N questions for a given module key.
   function buildSession(moduleKey, R, n) {
     const out = [];
@@ -414,8 +461,9 @@
       case 'quiz': return QUIZ.all(R);
       case 'logic': return LOGIC.all(R);
       case 'addition': return ADD.all(R);
+      case 'calendar': return CAL.all(R);
       case 'daily': {
-        const m = R.pick([NUM, ABC, QUIZ, LOGIC, ADD]);
+        const m = R.pick([NUM, ABC, QUIZ, LOGIC, ADD, CAL]);
         return m.all(R);
       }
       default: return NUM.all(R);
