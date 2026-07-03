@@ -62,6 +62,11 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .welcome-opt.pink{background:linear-gradient(135deg,var(--pink),#9b5de5)}
 .welcome-opt.orange{background:linear-gradient(135deg,var(--orange),#ffb703)}
 .welcome-start{background:linear-gradient(135deg,var(--green),#06d6a0); font-size:clamp(20px,5.5vw,26px); max-width:340px; width:100%}
+.avatar-pick{display:flex; gap:16px; justify-content:center}
+.avatar-opt{font-size:clamp(40px,11vw,58px); width:clamp(72px,19vw,94px); height:clamp(72px,19vw,94px); line-height:1;
+  border-radius:22px; border:4px solid transparent; background:#fff; box-shadow:0 6px 0 rgba(0,0,0,.12); cursor:pointer}
+.avatar-opt.selected{border-color:var(--purple); background:#f4e8ff; transform:translateY(-2px)}
+.avatar-opt:active{transform:translateY(3px)}
 
 /* ---------- HOME ---------- */
 .topbar{display:flex; justify-content:space-between; align-items:center; gap:10px}
@@ -202,7 +207,8 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .profile-card{margin:18px auto 0; background:var(--card); border-radius:var(--radius); padding:clamp(22px,6vw,40px);
   text-align:center; box-shadow:var(--shadow); max-width:520px; width:100%}
 .profile-photo{width:96px; height:96px; border-radius:50%; object-fit:cover; box-shadow:var(--shadow); border:4px solid #fff}
-.profile-avatar{font-size:84px; line-height:1}
+.profile-avatar{font-size:84px; line-height:1; cursor:pointer}
+.profile-avatar:active{transform:scale(.94)}
 .profile-name{font-size:clamp(26px,7vw,38px); margin:8px 0 2px; color:var(--purple); font-weight:800}
 .profile-school{font-size:clamp(16px,4.5vw,20px); color:var(--ink-soft); font-weight:700; margin:2px 0}
 .profile-email{font-size:clamp(12px,3.4vw,15px); color:var(--ink-soft); margin:2px 0 6px; opacity:.8}

@@ -139,6 +139,7 @@
       }
     };
     $('profileBtn').onclick = openProfile;
+    updateAvatarUI();
     document.querySelectorAll('.tile').forEach(t => {
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
@@ -696,7 +697,9 @@
     if (prof.childName) { state.name = prof.childName; localStorage.setItem('ll_name', state.name); }
     if (prof.school) localStorage.setItem('ll_school', prof.school);
     if (prof.class) localStorage.setItem('ll_class', prof.class);
+    if (prof.avatar) localStorage.setItem('ll_avatar', prof.avatar);
     if (typeof prof.points === 'number') localStorage.setItem('ll_points_total', String(prof.points));
+    updateAvatarUI();
   }
 
   function saveProfile(data) {
@@ -783,6 +786,10 @@
     const nameIn = entryInput("Child's name", guess, 14);
     const schoolIn = entryInput('School name', localStorage.getItem('ll_school') || '', 40);
     const classSel = entryClassSelect(localStorage.getItem('ll_class'));
+    const avatarLabel = document.createElement('p');
+    avatarLabel.className = 'welcome-note';
+    avatarLabel.textContent = 'Choose your character';
+    const avatarPick = entryAvatarPicker(localStorage.getItem('ll_avatar'));
     const btn = document.createElement('button');
     btn.className = 'welcome-opt welcome-start';
     btn.textContent = 'Save & Play 🎉';
@@ -790,20 +797,25 @@
       const child = nameIn.value.trim();
       const school = schoolIn.value.trim();
       const cls = classSel.value;
+      const avatar = avatarPick.dataset.value || '🧒';
       if (!child) return nudge(nameIn);
       if (!school) return nudge(schoolIn);
       state.name = child.slice(0, 14);
       localStorage.setItem('ll_name', state.name);
       localStorage.setItem('ll_school', school);
       localStorage.setItem('ll_class', cls);
-      state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school, class: cls });
+      localStorage.setItem('ll_avatar', avatar);
+      state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school, class: cls, avatar: avatar });
       if (state.user) cacheProfile(state.user.uid, state.profile); // remember on this device
-      saveProfile({ childName: state.name, school: school, class: cls }); // fire-and-forget (offline-safe)
+      saveProfile({ childName: state.name, school: school, class: cls, avatar: avatar }); // fire-and-forget (offline-safe)
+      updateAvatarUI();
       stepMood(); // proceed immediately; never wait on the network
     };
     body.appendChild(nameIn);
     body.appendChild(schoolIn);
     body.appendChild(classSel);
+    body.appendChild(avatarLabel);
+    body.appendChild(avatarPick);
     body.appendChild(btn);
     setTimeout(() => { try { nameIn.focus(); } catch (e) {} }, 120);
     speak('Please type the child name and school.');
@@ -834,9 +846,11 @@
     const cls = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || '';
     $('profileSchool').textContent = (school ? '🏫 ' + school : '') + (cls ? (school ? '  ·  ' : '') + '🎓 ' + cls : '');
     $('profileEmail').textContent = signedIn ? (state.user.email || '') : '';
-    const photo = signedIn ? state.user.photoURL : '';
-    if (photo) { $('profilePhoto').src = photo; $('profilePhoto').hidden = false; $('profileAvatar').hidden = true; }
-    else { $('profilePhoto').hidden = true; $('profileAvatar').hidden = false; }
+    // Show the child's chosen boy/girl avatar (tap to switch).
+    $('profilePhoto').hidden = true;
+    $('profileAvatar').hidden = false;
+    $('profileAvatar').textContent = getAvatar();
+    $('profileAvatar').title = 'Tap to change character';
     const total = parseInt(localStorage.getItem('ll_points_total') || '0', 10);
     $('statTotal').textContent = total;
     $('statToday').textContent = getTodayStars();
@@ -850,6 +864,8 @@
 
   $('profileHome').onclick = () => { initHome(); show('home'); };
   $('welcomeHome').onclick = () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  // Tap the avatar to switch between boy and girl.
+  $('profileAvatar').onclick = () => { setAvatar(getAvatar() === '👦' ? '👧' : '👦'); };
 
   /* ---------- WELCOME / DAILY CHECK-IN ---------- */
   let welcomeTimer = null;
@@ -929,6 +945,40 @@
     el.focus();
     el.classList.add('shake-input');
     setTimeout(() => el.classList.remove('shake-input'), 450);
+  }
+
+  // Boy / girl avatar picker used in profile setup.
+  const AVATARS = ['👦', '👧'];
+  function getAvatar() {
+    return (state.profile && state.profile.avatar) || localStorage.getItem('ll_avatar') || '🧒';
+  }
+  function updateAvatarUI() {
+    const b = $('profileBtn'); if (b) b.textContent = getAvatar();
+  }
+  function setAvatar(emoji) {
+    localStorage.setItem('ll_avatar', emoji);
+    state.profile = Object.assign(state.profile || {}, { avatar: emoji });
+    if (state.user) { cacheProfile(state.user.uid, state.profile); saveProfile({ avatar: emoji }); }
+    updateAvatarUI();
+    if (currentScreen() === 'profile') renderProfile();
+  }
+  function entryAvatarPicker(current) {
+    const wrap = document.createElement('div');
+    wrap.className = 'avatar-pick';
+    wrap.dataset.value = current || '';
+    AVATARS.forEach((emoji) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'avatar-opt' + (current === emoji ? ' selected' : '');
+      b.textContent = emoji;
+      b.onclick = () => {
+        wrap.querySelectorAll('.avatar-opt').forEach((x) => x.classList.remove('selected'));
+        b.classList.add('selected');
+        wrap.dataset.value = emoji;
+      };
+      wrap.appendChild(b);
+    });
+    return wrap;
   }
 
   // Class / grade dropdown. Only PP1 for now; add more options here as content grows.
