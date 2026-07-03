@@ -106,6 +106,7 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .t-memory{background:linear-gradient(135deg,#00bbf9,#9b5de5)}
 .t-add{background:linear-gradient(135deg,#06d6a0,#118ab2)}
 .t-cal{background:linear-gradient(135deg,#f9844a,#f3722c)}
+.t-clock{background:linear-gradient(135deg,#4cc9f0,#4361ee)}
 .t-daily{grid-column:1/-1}
 
 .home-foot{margin-top:auto; padding-top:20px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
@@ -185,6 +186,14 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .story-prev{background:linear-gradient(135deg,#bdb2ff,#9b5de5)}
 .story-next{background:linear-gradient(135deg,var(--green),#06d6a0)}
 .big-btn:disabled{opacity:.4; cursor:default; transform:none}
+
+/* ---------- CLOCK ---------- */
+.clock-face{display:flex; flex-direction:column; align-items:center; margin-top:14px}
+.clock-svg{width:clamp(230px,72vw,320px); height:auto; display:block; filter:drop-shadow(0 8px 10px rgba(120,80,180,.18))}
+.clk-num{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:18px; fill:var(--ink)}
+.clock-face .clk-num{cursor:pointer}
+.clock-face .clk-num:active{fill:var(--orange)}
+.clock-face .seq-next{margin-top:16px}
 
 /* ---------- SEQUENCE (drag & drop) ---------- */
 .seq-slots{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:18px auto 0; max-width:620px}

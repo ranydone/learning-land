@@ -144,7 +144,8 @@
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
           : t.dataset.game === 'calendar' ? startCalendar()
-            : startGame(t.dataset.game));
+            : t.dataset.game === 'clock' ? startClock()
+              : startGame(t.dataset.game));
     });
   }
 
@@ -214,7 +215,8 @@
       const sw = document.createElement('div');
       sw.className = 'swatch'; sw.style.background = q.display.value;
       disp.appendChild(sw);
-    } // 'none' -> empty
+    }
+    else if (q.display.kind === 'clock') { disp.innerHTML = clockFaceSVG(q.display.value.h, q.display.value.m); } // 'none' -> empty
 
     // options
     const wrap = $('qOptions');
@@ -578,6 +580,88 @@
 
   $('seqHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('seqSpeak').onclick = function () { if (seqSpeakText) speak(seqSpeakText); };
+
+  /* ---------- CLOCK (tell the time) ---------- */
+  let clockSpeakText = '';
+
+  // Draws a friendly analog clock showing h:m. Hour numbers carry data-hour for taps.
+  function clockFaceSVG(h, m) {
+    const cx = 100, cy = 100, R = 92, numR = 72, hourLen = 42, minLen = 62;
+    let ticks = '', nums = '';
+    for (let n = 0; n < 12; n++) {
+      const a = n * 30 * Math.PI / 180;
+      const x1 = cx + (R - 6) * Math.sin(a), y1 = cy - (R - 6) * Math.cos(a);
+      const x2 = cx + (R - 14) * Math.sin(a), y2 = cy - (R - 14) * Math.cos(a);
+      ticks += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#e0d0f5" stroke-width="3" stroke-linecap="round"/>';
+    }
+    for (let n = 1; n <= 12; n++) {
+      const a = n * 30 * Math.PI / 180;
+      const x = cx + numR * Math.sin(a), y = cy - numR * Math.cos(a) + 6;
+      nums += '<text class="clk-num" data-hour="' + n + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="middle">' + n + '</text>';
+    }
+    const ha = ((h % 12) + m / 60) * 30 * Math.PI / 180;
+    const ma = m * 6 * Math.PI / 180;
+    const hx = cx + hourLen * Math.sin(ha), hy = cy - hourLen * Math.cos(ha);
+    const mx = cx + minLen * Math.sin(ma), my = cy - minLen * Math.cos(ma);
+    return '<svg viewBox="0 0 200 200" class="clock-svg">'
+      + '<circle cx="100" cy="100" r="92" fill="#fff" stroke="#9b5de5" stroke-width="6"/>'
+      + ticks + nums
+      + '<line x1="100" y1="100" x2="' + hx.toFixed(1) + '" y2="' + hy.toFixed(1) + '" stroke="#3a2c5a" stroke-width="7" stroke-linecap="round"/>'
+      + '<line x1="100" y1="100" x2="' + mx.toFixed(1) + '" y2="' + my.toFixed(1) + '" stroke="#ff5da2" stroke-width="5" stroke-linecap="round"/>'
+      + '<circle cx="100" cy="100" r="7" fill="#3a2c5a"/></svg>';
+  }
+
+  // Interactive "set the clock" intro, then the reading quiz.
+  function startClock() {
+    show('clock');
+    const R = makeRNG('clock-' + Date.now() + '-' + Math.random());
+    const targets = R.sample([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 5);
+    let idx = 0, currentHour = 12;
+    const faceEl = $('clockFace'), feed = $('clockFeedback');
+
+    function render() {
+      faceEl.innerHTML = clockFaceSVG(currentHour, 0);
+      faceEl.querySelectorAll('.clk-num').forEach(function (t) {
+        t.addEventListener('click', function () { onPick(parseInt(t.dataset.hour, 10)); });
+      });
+    }
+    function ask() {
+      const target = targets[idx];
+      $('clockTitle').textContent = "🕐 Make it " + target + " o'clock!";
+      feed.className = 'feedback';
+      feed.textContent = 'Tap the number ' + target + ' on the clock';
+      clockSpeakText = "Make the clock show " + target + " o'clock. Tap the number " + target;
+      speak(clockSpeakText);
+    }
+    function onPick(n) {
+      currentHour = n; render();
+      const target = targets[idx];
+      if (n === target) {
+        addStars(1); burst();
+        feed.className = 'feedback good'; feed.textContent = "🎉 Yes! " + n + " o'clock!";
+        clockSpeakText = n + " o'clock! Well done!"; speak(clockSpeakText);
+        idx++;
+        if (idx >= targets.length) finish(); else setTimeout(ask, 950);
+      } else {
+        feed.className = 'feedback try'; feed.textContent = "That's " + n + " o'clock — we want " + target + "!";
+        clockSpeakText = "That is " + n + " o'clock. We want " + target + " o'clock."; speak(clockSpeakText);
+      }
+    }
+    function finish() {
+      $('clockTitle').textContent = '🎉 Great job!';
+      feed.className = 'feedback good'; feed.textContent = 'You can set the clock! Now read some clocks.';
+      clockSpeakText = 'Great job! Now let us read some clocks!'; speak(clockSpeakText);
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again seq-next';
+      btn.textContent = 'Next ▶️';
+      btn.onclick = function () { startGame('clock'); };
+      faceEl.appendChild(btn);
+    }
+    render(); ask();
+  }
+
+  $('clockHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  $('clockSpeak').onclick = function () { if (clockSpeakText) speak(clockSpeakText); };
 
   /* ---------- confetti ---------- */
   const cv = $('confetti'); const ctx = cv.getContext('2d');

@@ -441,6 +441,43 @@
     all(R) { return R.pick([this.nextDay, this.prevDay, this.missingDay, this.firstDay, this.totalDays, this.nextMonth, this.prevMonth, this.missingMonth, this.firstMonth, this.totalMonths]).call(this, R); },
   };
 
+  /* ================= CLOCK (tell the time) ================= */
+  const CLOCK = {
+    read(R) {
+      const h = R.int(1, 12);
+      const pool = [];
+      for (let x = 1; x <= 12; x++) if (x !== h) pool.push({ label: x + " o'clock" });
+      return {
+        module: 'clock',
+        prompt: 'What time is it?',
+        speak: 'What time is it? Look at the short hand.',
+        display: { kind: 'clock', value: { h: h, m: 0 } },
+        options: buildOptions(R, { label: h + " o'clock" }, pool),
+      };
+    },
+    timeOfDay(R) {
+      const items = [
+        { q: 'When do you eat breakfast?', a: 'Morning' },
+        { q: 'When do you wake up?', a: 'Morning' },
+        { q: 'When do you go to school?', a: 'Morning' },
+        { q: 'When do you eat lunch?', a: 'Afternoon' },
+        { q: 'When is the sun high up?', a: 'Afternoon' },
+        { q: 'When do you sleep in bed?', a: 'Night' },
+        { q: 'When do you see the moon and stars?', a: 'Night' },
+      ];
+      const it = R.pick(items);
+      const opts = [{ label: 'Morning', emoji: '🌅' }, { label: 'Afternoon', emoji: '☀️' }, { label: 'Night', emoji: '🌙' }];
+      return {
+        module: 'clock',
+        prompt: it.q,
+        speak: it.q,
+        display: { kind: 'none', value: '' },
+        options: R.shuffle(opts.map((o) => ({ label: o.label, emoji: o.emoji, correct: o.label === it.a }))),
+      };
+    },
+    all(R) { return R.pick([this.read, this.read, this.read, this.timeOfDay]).call(this, R); },
+  };
+
   // Build a session of N questions for a given module key.
   function buildSession(moduleKey, R, n) {
     const out = [];
@@ -462,8 +499,9 @@
       case 'logic': return LOGIC.all(R);
       case 'addition': return ADD.all(R);
       case 'calendar': return CAL.all(R);
+      case 'clock': return CLOCK.all(R);
       case 'daily': {
-        const m = R.pick([NUM, ABC, QUIZ, LOGIC, ADD, CAL]);
+        const m = R.pick([NUM, ABC, QUIZ, LOGIC, ADD, CAL, CLOCK]);
         return m.all(R);
       }
       default: return NUM.all(R);
