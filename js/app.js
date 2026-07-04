@@ -935,7 +935,8 @@
     const name = (state.name && state.name !== 'Star') ? state.name : (localStorage.getItem('ll_name') || 'Little Star');
     $('profileName').textContent = name;
     const school = (state.profile && state.profile.school) || localStorage.getItem('ll_school') || '';
-    const cls = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || 'PP1';
+    const clsRaw = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || 'PP1';
+    const cls = clsRaw === 'PP3' ? 'PP2' : clsRaw; // merged PP2/PP3 tier
     $('profileSchool').textContent = school ? '🏫 ' + school : '';
     const csel = $('profileClassSel');
     csel.innerHTML = CLASS_OPTIONS.map((o) => '<option value="' + o.v + '"' + (o.v === cls ? ' selected' : '') + '>' + o.t + '</option>').join('');
@@ -1109,16 +1110,15 @@
     return wrap;
   }
 
-  // Class / grade dropdown. Games scale their difficulty to the chosen class.
+  // Class / grade dropdown — two difficulty tiers. Games scale to the choice.
   const CLASS_OPTIONS = [
-    { v: 'PP1', t: 'PP1 (Pre-Primary 1)' },
-    { v: 'PP2', t: 'PP2 (Pre-Primary 2)' },
-    { v: 'PP3', t: 'PP3 (Pre-Primary 3)' },
+    { v: 'PP1', t: 'KG / PP1' },
+    { v: 'PP2', t: 'PP2 / PP3' },
   ];
-  // Difficulty level (1..3) from the child's class.
+  // Difficulty level from the child's class: KG/PP1 -> easier, PP2/PP3 -> harder.
   function currentLevel() {
     const c = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || 'PP1';
-    return c === 'PP3' ? 3 : c === 'PP2' ? 2 : 1;
+    return (c === 'PP2' || c === 'PP3') ? 2 : 1;
   }
   function entryClassSelect(current) {
     const sel = document.createElement('select');
