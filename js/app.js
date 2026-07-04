@@ -188,7 +188,7 @@
     // Daily Play uses today's seed (same all day); free play uses time for variety.
     const seed = game === 'daily' ? 'daily-' + todayKey() : game + '-' + Date.now() + '-' + Math.random();
     const R = makeRNG(seed);
-    state.queue = GENERATORS.buildSession(game, R, SESSION_LEN);
+    state.queue = GENERATORS.buildSession(game, R, SESSION_LEN, currentLevel());
     state.idx = 0;
     state.correct = 0;
     state.locked = false;
@@ -366,7 +366,7 @@
 
   function startMemory() {
     const R = makeRNG('mem-' + Date.now() + '-' + Math.random());
-    mem.total = 6;
+    mem.total = [6, 8, 10][currentLevel() - 1]; // more pairs for higher classes
     const items = R.sample(namedPool(), mem.total);
     let cards = [];
     items.forEach((it, i) => {
@@ -916,6 +916,12 @@
     show('profile');
   }
 
+  function setClass(cls) {
+    localStorage.setItem('ll_class', cls);
+    state.profile = Object.assign(state.profile || {}, { class: cls });
+    if (state.user) { cacheProfile(state.user.uid, state.profile); saveProfile({ class: cls }); }
+  }
+
   function levelBadge(total) {
     if (total >= 200) return '👑';
     if (total >= 100) return '🏆';
@@ -929,8 +935,11 @@
     const name = (state.name && state.name !== 'Star') ? state.name : (localStorage.getItem('ll_name') || 'Little Star');
     $('profileName').textContent = name;
     const school = (state.profile && state.profile.school) || localStorage.getItem('ll_school') || '';
-    const cls = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || '';
-    $('profileSchool').textContent = (school ? '🏫 ' + school : '') + (cls ? (school ? '  ·  ' : '') + '🎓 ' + cls : '');
+    const cls = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || 'PP1';
+    $('profileSchool').textContent = school ? '🏫 ' + school : '';
+    const csel = $('profileClassSel');
+    csel.innerHTML = CLASS_OPTIONS.map((o) => '<option value="' + o.v + '"' + (o.v === cls ? ' selected' : '') + '>' + o.t + '</option>').join('');
+    csel.onchange = (e) => setClass(e.target.value);
     $('profileEmail').textContent = signedIn ? (state.user.email || '') : '';
     // Show the child's chosen boy/girl avatar (tap to switch).
     $('profilePhoto').hidden = true;
@@ -1100,8 +1109,17 @@
     return wrap;
   }
 
-  // Class / grade dropdown. Only PP1 for now; add more options here as content grows.
-  const CLASS_OPTIONS = [{ v: 'PP1', t: 'PP1 (Pre-Primary 1)' }];
+  // Class / grade dropdown. Games scale their difficulty to the chosen class.
+  const CLASS_OPTIONS = [
+    { v: 'PP1', t: 'PP1 (Pre-Primary 1)' },
+    { v: 'PP2', t: 'PP2 (Pre-Primary 2)' },
+    { v: 'PP3', t: 'PP3 (Pre-Primary 3)' },
+  ];
+  // Difficulty level (1..3) from the child's class.
+  function currentLevel() {
+    const c = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || 'PP1';
+    return c === 'PP3' ? 3 : c === 'PP2' ? 2 : 1;
+  }
   function entryClassSelect(current) {
     const sel = document.createElement('select');
     sel.className = 'name-input entry-field entry-select';

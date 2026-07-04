@@ -29,6 +29,13 @@ in order, sorting, and comparing. Those are exactly the puzzles in this section 
 the building blocks every programmer uses, taught at a KG1 level. (See
 `PARENTS.md` for the full learning plan and a 30-minute routine.)
 
+## 🎚️ Class levels (PP1 · PP2 · PP3)
+Every game scales its difficulty to the child's **class**, chosen in the profile:
+- **PP1** — numbers to ~10, add to 10, o'clock, short patterns
+- **PP2** — numbers to 20, **subtraction**, **half-past** time, upper/lowercase letters, opposites, missing letters, 8-pair memory
+- **PP3** — numbers to 50, bigger add/subtract, longer patterns, 10-pair memory
+Change the class anytime on the 👤 profile screen.
+
 ## 🔐 Accounts, profiles & points (optional)
 Add **Google sign-in** so each child gets a profile and their **points are saved
 to the cloud** and follow them across devices. Powered by Firebase Auth +

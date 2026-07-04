@@ -32,22 +32,28 @@
     return R.shuffle([...set]).map(v => ({ label: String(v), correct: v === answer }));
   }
 
+  // Difficulty level: 1 = PP1, 2 = PP2, 3 = PP3. Set by buildSession().
+  let LEVEL = 1;
+  const at = (arr) => arr[LEVEL - 1]; // pick this level's value from a [pp1, pp2, pp3] array
+
   /* ================= NUMBERS ================= */
   const NUM = {
     count(R) {
+      const max = at([10, 12, 15]);
       const item = R.pick([...C.fruits, ...C.animals]);
-      const n = R.int(1, 9);
+      const n = R.int(1, max);
       return {
         module: 'numbers',
         prompt: `How many ${item.name}?`,
         speak: `How many ${item.name} can you count?`,
         display: { kind: 'emojis', value: repeatEmoji(item.e, n) },
-        options: numberOptions(R, n, 1, 10),
+        options: numberOptions(R, n, 1, max + 2),
       };
     },
     bigger(R) {
-      let a = R.int(1, 9), b = R.int(1, 9);
-      while (a === b) b = R.int(1, 9);
+      const max = at([9, 20, 50]);
+      let a = R.int(1, max), b = R.int(1, max);
+      while (a === b) b = R.int(1, max);
       const ans = Math.max(a, b);
       return {
         module: 'numbers',
@@ -58,8 +64,9 @@
       };
     },
     smaller(R) {
-      let a = R.int(1, 9), b = R.int(1, 9);
-      while (a === b) b = R.int(1, 9);
+      const max = at([9, 20, 50]);
+      let a = R.int(1, max), b = R.int(1, max);
+      while (a === b) b = R.int(1, max);
       const ans = Math.min(a, b);
       return {
         module: 'numbers',
@@ -70,7 +77,8 @@
       };
     },
     next(R) {
-      const start = R.int(1, 7);
+      const max = at([10, 15, 20]);
+      const start = R.int(1, max - 3);
       const seq = [start, start + 1, start + 2];
       const ans = start + 3;
       return {
@@ -78,11 +86,12 @@
         prompt: 'What number comes NEXT?',
         speak: `${seq.join(', ')} ... what comes next?`,
         display: { kind: 'huge', value: seq.join('  ') + '  ?' },
-        options: numberOptions(R, ans, 1, 12),
+        options: numberOptions(R, ans, 1, max + 2),
       };
     },
     missing(R) {
-      const start = R.int(1, 6);
+      const max = at([10, 15, 20]);
+      const start = R.int(1, max - 3);
       const seq = [start, start + 1, start + 2, start + 3];
       const hideIdx = R.int(1, 2);
       const ans = seq[hideIdx];
@@ -92,21 +101,41 @@
         prompt: 'Which number is MISSING?',
         speak: `Find the missing number. ${seq.map((v, i) => (i === hideIdx ? 'blank' : v)).join(', ')}`,
         display: { kind: 'huge', value: shown },
-        options: numberOptions(R, ans, 1, 12),
+        options: numberOptions(R, ans, 1, max + 2),
       };
     },
     addSmall(R) {
-      const a = R.int(1, 5), b = R.int(1, 4);
+      const amax = at([5, 9, 10]), bmax = at([4, 9, 10]);
+      const a = R.int(1, amax), b = R.int(1, bmax);
       const ans = a + b;
       return {
         module: 'numbers',
         prompt: `Add them up!`,
         speak: `What is ${a} plus ${b}?`,
         display: { kind: 'emojis', value: repeatEmoji('🍎', a) + '  ➕  ' + repeatEmoji('🍏', b) },
-        options: numberOptions(R, ans, 1, 12),
+        options: numberOptions(R, ans, 1, amax + bmax + 2),
       };
     },
-    all(R) { return R.pick([this.count, this.count, this.bigger, this.smaller, this.next, this.missing, this.addSmall]).call(this, R); },
+    subtract(R) { // PP2+ : take away
+      const amax = at([8, 12, 18]);
+      const a = R.int(2, amax);
+      const b = R.int(1, a - 1);
+      const ans = a - b;
+      const display = '<div class="add-objects">' + repeatEmoji('🍎', a) + '</div>'
+        + '<div class="add-sentence">' + a + ' <b>−</b> ' + b + ' <b>=</b> ?</div>';
+      return {
+        module: 'numbers',
+        prompt: 'Take away!',
+        speak: `${a} take away ${b}. How many are left?`,
+        display: { kind: 'emojis', value: display },
+        options: numberOptions(R, ans, 0, a + 2),
+      };
+    },
+    all(R) {
+      const pool = [this.count, this.count, this.bigger, this.smaller, this.next, this.missing, this.addSmall];
+      if (LEVEL >= 2) pool.push(this.subtract, this.addSmall);
+      return R.pick(pool).call(this, R);
+    },
   };
 
   /* ================= ALPHABETS ================= */
@@ -157,7 +186,39 @@
         options: buildOptions(R, { label: ans }, pool),
       };
     },
-    all(R) { return R.pick([this.startsWith, this.whichPicture, this.whichPicture, this.findLetter, this.nextLetter]).call(this, R); },
+    caseMatch(R) { // PP2+ : match big letter to small letter
+      const item = R.pick(C.abcThings);
+      const showUpper = R.bool();
+      const shown = showUpper ? item.l : item.l.toLowerCase();
+      const ans = showUpper ? item.l.toLowerCase() : item.l;
+      const pool = C.abcThings.filter(t => t.l !== item.l).map(t => ({ label: showUpper ? t.l.toLowerCase() : t.l }));
+      return {
+        module: 'alphabets',
+        prompt: showUpper ? `Find the small letter for ${shown}` : `Find the BIG letter for ${shown}`,
+        speak: `Find the ${showUpper ? 'small' : 'big'} letter for ${item.l}`,
+        display: { kind: 'huge', value: shown },
+        options: buildOptions(R, { label: ans }, pool),
+      };
+    },
+    missingLetter(R) { // PP2+ : A B ? D
+      const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const i = R.int(0, 23);
+      const seq = [A[i], A[i + 1], A[i + 2]];
+      const ans = seq[1];
+      const pool = A.split('').filter(x => x !== ans).map(x => ({ label: x }));
+      return {
+        module: 'alphabets',
+        prompt: `Which letter is MISSING?  ${seq[0]} → ❓ → ${seq[2]}`,
+        speak: `${seq[0]}, blank, ${seq[2]}. Which letter is missing?`,
+        display: { kind: 'huge', value: seq[0] + '  ❓  ' + seq[2] },
+        options: buildOptions(R, { label: ans }, pool),
+      };
+    },
+    all(R) {
+      const pool = [this.startsWith, this.whichPicture, this.whichPicture, this.findLetter, this.nextLetter];
+      if (LEVEL >= 2) pool.push(this.caseMatch, this.missingLetter);
+      return R.pick(pool).call(this, R);
+    },
   };
 
   /* ================= FUN QUIZ (world knowledge / MCQ) ================= */
@@ -243,14 +304,33 @@
         options: opts,
       };
     },
-    all(R) { return R.pick([this.animalSound, this.whoSays, this.oddCategory, this.pickCategory, this.colorName, this.situation, this.situation]).call(this, R); },
+    opposite(R) { // PP2+ : opposites
+      const pairs = [['big', 'small'], ['hot', 'cold'], ['up', 'down'], ['day', 'night'], ['happy', 'sad'], ['fast', 'slow'], ['open', 'closed'], ['full', 'empty'], ['tall', 'short'], ['wet', 'dry']];
+      const p = R.pick(pairs);
+      const showFirst = R.bool();
+      const word = showFirst ? p[0] : p[1];
+      const ans = showFirst ? p[1] : p[0];
+      const pool = pairs.flat().filter(w => w !== ans && w !== word).map(w => ({ label: w }));
+      return {
+        module: 'quiz',
+        prompt: `What is the OPPOSITE of "${word}"?`,
+        speak: `What is the opposite of ${word}?`,
+        display: { kind: 'none', value: '' },
+        options: buildOptions(R, { label: ans }, pool),
+      };
+    },
+    all(R) {
+      const pool = [this.animalSound, this.whoSays, this.oddCategory, this.pickCategory, this.colorName, this.situation, this.situation];
+      if (LEVEL >= 2) pool.push(this.opposite, this.oddCategory);
+      return R.pick(pool).call(this, R);
+    },
   };
 
   /* ================= THINK & CODE (logic basics) ================= */
   const LOGIC = {
     pattern(R) {
       const set = R.pick(C.patternSets);
-      const reps = R.int(2, 3);
+      const reps = R.int(2, 2 + LEVEL); // longer patterns for higher classes
       const seq = [];
       for (let i = 0; i < reps; i++) seq.push(...set);
       const ans = set[seq.length % set.length];
@@ -341,7 +421,8 @@
     ],
     // Concrete: show two groups of the SAME object so she can count them all.
     concrete(R) {
-      const a = R.int(1, 5), b = R.int(1, 5);        // sums stay within 10
+      const max = at([5, 8, 10]);
+      const a = R.int(1, max), b = R.int(1, max);
       const ans = a + b;
       const it = R.pick(this.pool);
       const display =
@@ -353,12 +434,13 @@
         prompt: 'How many in all?',
         speak: `Count them all! ${a} ${it.n} plus ${b} ${it.n}. How many ${it.n} all together?`,
         display: { kind: 'emojis', value: display },
-        options: numberOptions(R, ans, 0, 12),
+        options: numberOptions(R, ans, 0, max * 2 + 2),
       };
     },
     // Simple word problem with countable pictures.
     story(R) {
-      const a = R.int(1, 4), b = R.int(1, 3);
+      const ma = at([4, 6, 8]), mb = at([3, 5, 7]);
+      const a = R.int(1, ma), b = R.int(1, mb);
       const ans = a + b;
       const it = R.pick(this.pool);
       const display =
@@ -371,12 +453,12 @@
         prompt: q,
         speak: q,
         display: { kind: 'emojis', value: display },
-        options: numberOptions(R, ans, 0, 12),
+        options: numberOptions(R, ans, 0, ma + mb + 2),
       };
     },
     // "Add one more" — the easiest, builds the +1 idea.
     plusOne(R) {
-      const a = R.int(1, 8);
+      const a = R.int(1, at([8, 14, 19]));
       const ans = a + 1;
       const it = R.pick(this.pool);
       const display =
@@ -388,10 +470,31 @@
         prompt: 'One more! How many now?',
         speak: `${a} ${it.n}, and one more. How many now?`,
         display: { kind: 'emojis', value: display },
-        options: numberOptions(R, ans, 0, 12),
+        options: numberOptions(R, ans, 0, a + 3),
       };
     },
-    all(R) { return R.pick([this.concrete, this.concrete, this.concrete, this.story, this.plusOne]).call(this, R); },
+    // PP2+ : take away (subtraction).
+    takeAway(R) {
+      const a = R.int(2, at([8, 12, 18]));
+      const b = R.int(1, a - 1);
+      const ans = a - b;
+      const it = R.pick(this.pool);
+      const display =
+        '<div class="add-objects">' + repeatEmoji(it.e, a) + '</div>' +
+        '<div class="add-sentence">' + a + ' <b>−</b> ' + b + ' <b>=</b> ?</div>';
+      return {
+        module: 'addition',
+        prompt: 'Take away! How many are left?',
+        speak: `You have ${a} ${it.n}. Take away ${b}. How many are left?`,
+        display: { kind: 'emojis', value: display },
+        options: numberOptions(R, ans, 0, a + 2),
+      };
+    },
+    all(R) {
+      const pool = [this.concrete, this.concrete, this.story, this.plusOne];
+      if (LEVEL >= 2) pool.push(this.takeAway, this.concrete);
+      return R.pick(pool).call(this, R);
+    },
   };
 
   /* ================= DAYS & MONTHS (calendar) ================= */
@@ -455,6 +558,18 @@
         options: buildOptions(R, { label: h + " o'clock" }, pool),
       };
     },
+    readHalf(R) { // PP2+ : half past
+      const h = R.int(1, 12);
+      const pool = [];
+      for (let x = 1; x <= 12; x++) if (x !== h) pool.push({ label: 'half past ' + x });
+      return {
+        module: 'clock',
+        prompt: 'What time is it?',
+        speak: 'What time is it? The big hand is on the 6, so it is half past.',
+        display: { kind: 'clock', value: { h: h, m: 30 } },
+        options: buildOptions(R, { label: 'half past ' + h }, pool),
+      };
+    },
     timeOfDay(R) {
       const items = [
         { q: 'When do you eat breakfast?', a: 'Morning' },
@@ -475,11 +590,16 @@
         options: R.shuffle(opts.map((o) => ({ label: o.label, emoji: o.emoji, correct: o.label === it.a }))),
       };
     },
-    all(R) { return R.pick([this.read, this.read, this.read, this.timeOfDay]).call(this, R); },
+    all(R) {
+      const pool = [this.read, this.read, this.timeOfDay];
+      if (LEVEL >= 2) pool.push(this.readHalf, this.read);
+      return R.pick(pool).call(this, R);
+    },
   };
 
   // Build a session of N questions for a given module key.
-  function buildSession(moduleKey, R, n) {
+  function buildSession(moduleKey, R, n, level) {
+    LEVEL = Math.max(1, Math.min(3, level || 1));
     const out = [];
     let guard = 0;
     while (out.length < n && guard++ < n * 12) {
