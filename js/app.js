@@ -140,6 +140,8 @@
     };
     $('profileBtn').onclick = openProfile;
     updateAvatarUI();
+    $('copyYear').textContent = new Date().getFullYear();
+    document.querySelectorAll('.foot-links [data-info]').forEach(function (b) { b.onclick = function () { openInfo(b.dataset.info); }; });
     document.querySelectorAll('.tile').forEach(t => {
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
@@ -950,6 +952,39 @@
   $('welcomeHome').onclick = () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   // Tap the avatar to switch between boy and girl.
   $('profileAvatar').onclick = () => { setAvatar(getAvatar() === '👦' ? '👧' : '👦'); };
+
+  /* ---------- info modal (About / Privacy / Contact) ---------- */
+  const INFO = {
+    about: {
+      title: 'About Pogogy',
+      html: '<p><b>Pogogy</b> is a playful, safe learning world for little ones (ages 3–6, KG / PP1).</p>'
+        + '<p>Through colorful, voice-guided games, children explore numbers, letters, addition, telling time, days &amp; months, logic, stories and more — with fresh puzzles every day.</p>'
+        + '<p>Built with ❤️ to make early learning joyful, gentle and fun.</p>',
+    },
+    privacy: {
+      title: 'Privacy',
+      html: '<p>Your child’s safety and privacy come first. 🔒</p>'
+        + '<p>To personalize learning and save progress, we collect a first name, school, class, a chosen character, and a parent’s Google account. We use <b>Google Sign-In</b> and store data securely with Google Firebase.</p>'
+        + '<p>We <b>never</b> sell your data, and we show <b>no ads</b>.</p>'
+        + '<p>You can ask us to delete your account and data at any time — just contact us.</p>',
+    },
+    contact: {
+      title: 'Contact Us',
+      html: '<p>We’d love to hear from you! 💌</p>'
+        + '<p>For questions, feedback, or to remove your data, email us at:</p>'
+        + '<p><a href="mailto:hello@pogogy.com">hello@pogogy.com</a></p>',
+    },
+  };
+  function openInfo(type) {
+    const info = INFO[type];
+    if (!info) return;
+    $('infoTitle').textContent = info.title;
+    $('infoBody').innerHTML = info.html;
+    $('infoModal').hidden = false;
+  }
+  function closeInfo() { $('infoModal').hidden = true; }
+  $('infoClose').onclick = closeInfo;
+  $('infoModal').addEventListener('click', (e) => { if (e.target === $('infoModal')) closeInfo(); });
 
   /* ---------- WELCOME / DAILY CHECK-IN ---------- */
   let welcomeTimer = null;

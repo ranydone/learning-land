@@ -15,7 +15,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=17" />
+  <link rel="stylesheet" href="css/style.css?v=18" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 62' fill='none' stroke-width='7' stroke-linecap='round'><path d='M8 55 A42 42 0 0 1 92 55' stroke='%23ff4d6d'/><path d='M16 55 A34 34 0 0 1 84 55' stroke='%23ff9f1c'/><path d='M24 55 A26 26 0 0 1 76 55' stroke='%23ffd60a'/><path d='M32 55 A18 18 0 0 1 68 55' stroke='%232ec4b6'/><path d='M40 55 A10 10 0 0 1 60 55' stroke='%233a86ff'/></svg>" />
 </head>
 <body>
@@ -26,6 +26,15 @@
     <select id="voiceSelectGlobal" class="dock-voice" aria-label="Choose voice" hidden></select>
     <button id="voiceFab" class="fab" title="Choose voice">🗣️</button>
     <button id="muteFab" class="fab" title="Sound on/off">🔊</button>
+  </div>
+
+  <!-- INFO MODAL (About / Privacy / Contact) -->
+  <div id="infoModal" class="modal-overlay" hidden>
+    <div class="modal-card">
+      <button id="infoClose" class="modal-close" title="Close">✕</button>
+      <h2 id="infoTitle"></h2>
+      <div id="infoBody" class="modal-body"></div>
+    </div>
   </div>
 
   <!-- WELCOME / DAILY CHECK-IN -->
@@ -120,8 +129,28 @@
       </button>
     </section>
 
-    <footer class="home-foot">
-      <span class="made">Made with ❤️ for you</span>
+    <footer class="site-foot">
+      <div class="foot-brand">
+        <span class="foot-logo" aria-hidden="true">
+          <svg viewBox="0 0 100 62" fill="none" stroke-width="7" stroke-linecap="round">
+            <path d="M8 55 A42 42 0 0 1 92 55" stroke="#ff4d6d"/>
+            <path d="M16 55 A34 34 0 0 1 84 55" stroke="#ff9f1c"/>
+            <path d="M24 55 A26 26 0 0 1 76 55" stroke="#ffd60a"/>
+            <path d="M32 55 A18 18 0 0 1 68 55" stroke="#2ec4b6"/>
+            <path d="M40 55 A10 10 0 0 1 60 55" stroke="#3a86ff"/>
+          </svg>
+        </span>
+        <div>
+          <div class="foot-name">Pogogy</div>
+          <div class="foot-tag">Fun, safe learning for little ones</div>
+        </div>
+      </div>
+      <nav class="foot-links">
+        <button type="button" data-info="about">About Us</button>
+        <button type="button" data-info="privacy">Privacy</button>
+        <button type="button" data-info="contact">Contact</button>
+      </nav>
+      <div class="foot-copy">© <span id="copyYear">2026</span> Pogogy · All rights reserved · Made with ❤️ in India</div>
     </footer>
   </main>
 
@@ -247,6 +276,6 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=9"></script>
   <script src="js/generators.js?v=17"></script>
-  <script src="js/app.js?v=17"></script>
+  <script src="js/app.js?v=18"></script>
 </body>
 </html>
