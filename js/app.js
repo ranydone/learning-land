@@ -110,14 +110,21 @@
   function totalKey() { return 'll_points_' + uKey(); }
   function getTodayStars() { return parseInt(localStorage.getItem(todayStarsKey()) || '0', 10); }
   function getTotal() { return parseInt(localStorage.getItem(totalKey()) || '0', 10); }
+  function rankKey() { return 'll_rank_' + uKey(); }
   function addStars(n) {
     localStorage.setItem(todayStarsKey(), String(getTodayStars() + n));
     $('todayStars').textContent = getTodayStars();
     // lifetime total for THIS account (local cache + cloud)
-    const total = getTotal() + n;
+    const before = getTotal();
+    const total = before + n;
     localStorage.setItem(totalKey(), String(total));
     if (state.profile) state.profile.points = total;
     cloudAddPoints(n);
+    // Did we just climb to a new named level?
+    const prevRank = parseInt(localStorage.getItem(rankKey()) || String(rankIndex(before)), 10);
+    const newRank = rankIndex(total);
+    if (newRank > prevRank) state.pendingLevelUp = LEVELS[newRank];
+    localStorage.setItem(rankKey(), String(newRank));
   }
 
   /* ---------- screens ---------- */
@@ -275,6 +282,18 @@
     renderQuestion();
   }
 
+  // If the child just crossed into a new named level, celebrate it on the done screen.
+  function showLevelUpOnDone() {
+    if (!state.pendingLevelUp) return false;
+    const lv = state.pendingLevelUp;
+    state.pendingLevelUp = null;
+    $('doneTitle').textContent = '🎉 LEVEL UP!';
+    $('doneMsg').textContent = 'You are now ' + lv.emoji + ' ' + lv.name + '! ' + $('doneMsg').textContent;
+    for (let k = 0; k < 4; k++) setTimeout(burst, k * 260);
+    speak('Level up! You are now a ' + lv.name + '!');
+    return true;
+  }
+
   function finish() {
     $('progressBar').style.width = '100%';
     show('done');
@@ -293,7 +312,7 @@
       row.appendChild(s);
       if (i < stars) setTimeout(() => burst(), 300 + i * 300);
     }
-    speak(stars === 3 ? 'Perfect! Amazing work ' + state.name : 'Well done ' + state.name);
+    if (!showLevelUpOnDone()) speak(stars === 3 ? 'Perfect! Amazing work ' + state.name : 'Well done ' + state.name);
 
     $('againBtn').onclick = () => startGame(state.game);
     $('homeBtn').onclick = () => { initHome(); show('home'); };
@@ -460,7 +479,7 @@
       row.appendChild(s);
       if (i < stars) setTimeout(() => burst(), 300 + i * 300);
     }
-    speak('Well done ' + state.name + '! You found all the pairs!');
+    if (!showLevelUpOnDone()) speak('Well done ' + state.name + '! You found all the pairs!');
     $('againBtn').textContent = '▶️ Play Again';
     $('againBtn').onclick = startMemory;
     $('homeBtn').onclick = () => { initHome(); show('home'); };
@@ -790,7 +809,9 @@
     localStorage.setItem('ll_name', state.name);
     localStorage.setItem('ll_school', prof.school || '');
     localStorage.setItem('ll_avatar', prof.avatar || '🧒');
-    localStorage.setItem(totalKey(), String(typeof prof.points === 'number' ? prof.points : 0));
+    const pts = typeof prof.points === 'number' ? prof.points : 0;
+    localStorage.setItem(totalKey(), String(pts));
+    localStorage.setItem(rankKey(), String(rankIndex(pts)));
     updateAvatarUI();
   }
 
@@ -918,12 +939,25 @@
     show('profile');
   }
 
-  function levelBadge(total) {
-    if (total >= 200) return '👑';
-    if (total >= 100) return '🏆';
-    if (total >= 50) return '🌟';
-    if (total >= 20) return '🌸';
-    return '🌱';
+  // Named levels earned by total stars — the progression/rank shown on the profile.
+  const LEVELS = [
+    { min: 0, name: 'Seedling', emoji: '🌱' },
+    { min: 30, name: 'Sprout', emoji: '🌿' },
+    { min: 75, name: 'Blossom', emoji: '🌼' },
+    { min: 150, name: 'Little Star', emoji: '⭐' },
+    { min: 250, name: 'Rainbow Kid', emoji: '🌈' },
+    { min: 400, name: 'Rocket Star', emoji: '🚀' },
+    { min: 600, name: 'Champion', emoji: '🏆' },
+    { min: 900, name: 'Superstar', emoji: '👑' },
+  ];
+  function rankIndex(total) {
+    let i = 0;
+    for (let k = 0; k < LEVELS.length; k++) if (total >= LEVELS[k].min) i = k;
+    return i;
+  }
+  function rankInfo(total) {
+    const i = rankIndex(total);
+    return { i: i, level: i + 1, cur: LEVELS[i], next: LEVELS[i + 1] || null };
   }
 
   function renderProfile() {
@@ -939,11 +973,15 @@
     $('profileAvatar').textContent = getAvatar();
     $('profileAvatar').title = 'Tap to change character';
     const total = getTotal();
+    const rank = rankInfo(total);
     $('statTotal').textContent = total;
     $('statToday').textContent = getTodayStars();
-    $('statBadge').textContent = levelBadge(total);
-    // Difficulty auto-adapts to progress — show the current stage.
-    $('profileDifficulty').textContent = '🎯 Challenge: ' + LEVEL_NAMES[currentLevel() - 1] + ' (grows as you earn stars)';
+    $('statBadge').textContent = rank.cur.emoji;
+    $('statLevelLabel').textContent = 'Lv ' + rank.level + ' ' + rank.cur.name;
+    // Progress to the next level (games also get a little harder as you climb).
+    $('profileDifficulty').textContent = rank.next
+      ? '⭐ ' + (rank.next.min - total) + ' more stars to become ' + rank.next.emoji + ' ' + rank.next.name + '!'
+      : '👑 Top level reached — you are a Superstar!';
     $('profileSignIn').hidden = signedIn || !fb.enabled;
     $('profileSignOut').hidden = !signedIn;
     $('profileSignedOutNote').hidden = signedIn || !fb.enabled;
@@ -1104,13 +1142,11 @@
   }
 
   // Difficulty AUTO-ADAPTS to the child's progress (total stars) — no manual
-  // class/level picker. As they earn more stars, games get harder. This is the
-  // seed for future AI/ML personalization.
-  const LEVEL_NAMES = ['Starter', 'Growing', 'Champion'];
-  const LEVEL_STEPS = [80, 250]; // <80 -> lvl1, 80-249 -> lvl2, 250+ -> lvl3
+  // class/level picker. It's tied to the earned rank (see LEVELS), so games get
+  // harder as the child levels up. Seed for future AI/ML personalization.
   function currentLevel() {
-    const pts = getTotal();
-    return pts >= LEVEL_STEPS[1] ? 3 : pts >= LEVEL_STEPS[0] ? 2 : 1;
+    const i = rankIndex(getTotal());
+    return i <= 2 ? 1 : i <= 4 ? 2 : 3; // Seedling–Blossom=easy, LittleStar–Rainbow=med, Rocket+=hard
   }
 
   // "Enter to have fun" sign-in: collects name + school (+ optional parent contact).

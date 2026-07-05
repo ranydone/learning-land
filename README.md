@@ -36,9 +36,17 @@ earns stars, so each account progresses at its own pace. Three stages:
 - **Growing** (80+ stars) — numbers to 20, **subtraction**, **half-past** time, upper/lowercase letters, opposites, longer patterns, 8-pair memory
 - **Champion** (250+ stars) — numbers to 50, bigger add/subtract, longest patterns, 10-pair memory
 
-Difficulty is derived from `getTotal()` (per-account star total) in `currentLevel()`
-— the seed for future AI/ML personalization. Points are stored **per signed-in
-account** (`ll_points_<uid>`), so accounts never share totals.
+## 🏅 Levels (earned by stars)
+The profile shows a named **level/rank** that grows with total stars, and a
+**"Level Up!"** celebration pops on the finish screen when a new one is reached:
+
+`🌱 Seedling` → `🌿 Sprout` (30) → `🌼 Blossom` (75) → `⭐ Little Star` (150) →
+`🌈 Rainbow Kid` (250) → `🚀 Rocket Star` (400) → `🏆 Champion` (600) → `👑 Superstar` (900)
+
+Game difficulty is tied to this rank (`currentLevel()`), and everything is derived
+from `getTotal()` (per-account star total) — the seed for future AI/ML
+personalization. Points are stored **per signed-in account** (`ll_points_<uid>`),
+so accounts never share totals.
 
 ## 🔐 Accounts, profiles & points (optional)
 Add **Google sign-in** so each child gets a profile and their **points are saved
