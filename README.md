@@ -29,11 +29,16 @@ in order, sorting, and comparing. Those are exactly the puzzles in this section 
 the building blocks every programmer uses, taught at a KG1 level. (See
 `PARENTS.md` for the full learning plan and a 30-minute routine.)
 
-## 🎚️ Difficulty tiers (KG/PP1 · PP2/PP3)
-Every game scales to the child's **class**, chosen in the profile:
-- **KG / PP1** — numbers to ~10, add to 10, o'clock, short patterns, 6-pair memory
-- **PP2 / PP3** — numbers to 20, **subtraction**, **half-past** time, upper/lowercase letters, opposites, missing letters, longer patterns, 8-pair memory
-Change the tier anytime on the 👤 profile screen.
+## 🎚️ Adaptive difficulty (auto)
+There's **no manual level picker** — games get harder automatically as the child
+earns stars, so each account progresses at its own pace. Three stages:
+- **Starter** (new) — numbers to ~10, add to 10, o'clock, short patterns, 6-pair memory
+- **Growing** (80+ stars) — numbers to 20, **subtraction**, **half-past** time, upper/lowercase letters, opposites, longer patterns, 8-pair memory
+- **Champion** (250+ stars) — numbers to 50, bigger add/subtract, longest patterns, 10-pair memory
+
+Difficulty is derived from `getTotal()` (per-account star total) in `currentLevel()`
+— the seed for future AI/ML personalization. Points are stored **per signed-in
+account** (`ll_points_<uid>`), so accounts never share totals.
 
 ## 🔐 Accounts, profiles & points (optional)
 Add **Google sign-in** so each child gets a profile and their **points are saved

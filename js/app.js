@@ -103,15 +103,19 @@
     }).join('');
   }
 
-  /* ---------- score (per day) ---------- */
-  function todayStarsKey() { return 'll_stars_' + todayKey(); }
+  /* ---------- score (per account, per day) ---------- */
+  // Scope all points to the signed-in user so accounts never share totals.
+  function uKey() { return (state.user && state.user.uid) ? state.user.uid : 'guest'; }
+  function todayStarsKey() { return 'll_stars_' + uKey() + '_' + todayKey(); }
+  function totalKey() { return 'll_points_' + uKey(); }
   function getTodayStars() { return parseInt(localStorage.getItem(todayStarsKey()) || '0', 10); }
+  function getTotal() { return parseInt(localStorage.getItem(totalKey()) || '0', 10); }
   function addStars(n) {
     localStorage.setItem(todayStarsKey(), String(getTodayStars() + n));
     $('todayStars').textContent = getTodayStars();
-    // also bump lifetime total locally + in the cloud (if signed in)
-    const total = parseInt(localStorage.getItem('ll_points_total') || '0', 10) + n;
-    localStorage.setItem('ll_points_total', String(total));
+    // lifetime total for THIS account (local cache + cloud)
+    const total = getTotal() + n;
+    localStorage.setItem(totalKey(), String(total));
     if (state.profile) state.profile.points = total;
     cloudAddPoints(n);
   }
@@ -738,6 +742,7 @@
           else if (currentScreen() === 'profile') renderProfile();
           else initHome();
         } else {
+          state.profile = null; // brand-new account -> no stale data from a previous user
           if (currentScreen() !== 'welcome') show('welcome');
           stepProfileSetup(user);
         }
@@ -780,11 +785,12 @@
 
   function applyProfile(prof) {
     state.profile = prof;
-    if (prof.childName) { state.name = prof.childName; localStorage.setItem('ll_name', state.name); }
-    if (prof.school) localStorage.setItem('ll_school', prof.school);
-    if (prof.class) localStorage.setItem('ll_class', prof.class);
-    if (prof.avatar) localStorage.setItem('ll_avatar', prof.avatar);
-    if (typeof prof.points === 'number') localStorage.setItem('ll_points_total', String(prof.points));
+    // Fully replace this device's cached view with THIS account's data.
+    state.name = prof.childName || 'Star';
+    localStorage.setItem('ll_name', state.name);
+    localStorage.setItem('ll_school', prof.school || '');
+    localStorage.setItem('ll_avatar', prof.avatar || '🧒');
+    localStorage.setItem(totalKey(), String(typeof prof.points === 'number' ? prof.points : 0));
     updateAvatarUI();
   }
 
@@ -871,7 +877,6 @@
     $('welcomeHome').hidden = true; // finish the profile before entering
     const nameIn = entryInput("Child's name", guess, 14);
     const schoolIn = entryInput('School name', localStorage.getItem('ll_school') || '', 40);
-    const classSel = entryClassSelect(localStorage.getItem('ll_class'));
     const avatarLabel = document.createElement('p');
     avatarLabel.className = 'welcome-note';
     avatarLabel.textContent = 'Choose your character';
@@ -882,24 +887,21 @@
     btn.onclick = () => {
       const child = nameIn.value.trim();
       const school = schoolIn.value.trim();
-      const cls = classSel.value;
       const avatar = avatarPick.dataset.value || '🧒';
       if (!child) return nudge(nameIn);
       if (!school) return nudge(schoolIn);
       state.name = child.slice(0, 14);
       localStorage.setItem('ll_name', state.name);
       localStorage.setItem('ll_school', school);
-      localStorage.setItem('ll_class', cls);
       localStorage.setItem('ll_avatar', avatar);
-      state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school, class: cls, avatar: avatar });
+      state.profile = Object.assign(state.profile || {}, { childName: state.name, school: school, avatar: avatar });
       if (state.user) cacheProfile(state.user.uid, state.profile); // remember on this device
-      saveProfile({ childName: state.name, school: school, class: cls, avatar: avatar }); // fire-and-forget (offline-safe)
+      saveProfile({ childName: state.name, school: school, avatar: avatar }); // fire-and-forget (offline-safe)
       updateAvatarUI();
       stepMood(); // proceed immediately; never wait on the network
     };
     body.appendChild(nameIn);
     body.appendChild(schoolIn);
-    body.appendChild(classSel);
     body.appendChild(avatarLabel);
     body.appendChild(avatarPick);
     body.appendChild(btn);
@@ -916,12 +918,6 @@
     show('profile');
   }
 
-  function setClass(cls) {
-    localStorage.setItem('ll_class', cls);
-    state.profile = Object.assign(state.profile || {}, { class: cls });
-    if (state.user) { cacheProfile(state.user.uid, state.profile); saveProfile({ class: cls }); }
-  }
-
   function levelBadge(total) {
     if (total >= 200) return '👑';
     if (total >= 100) return '🏆';
@@ -935,22 +931,19 @@
     const name = (state.name && state.name !== 'Star') ? state.name : (localStorage.getItem('ll_name') || 'Little Star');
     $('profileName').textContent = name;
     const school = (state.profile && state.profile.school) || localStorage.getItem('ll_school') || '';
-    const clsRaw = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || 'PP1';
-    const cls = clsRaw === 'PP3' ? 'PP2' : clsRaw; // merged PP2/PP3 tier
     $('profileSchool').textContent = school ? '🏫 ' + school : '';
-    const csel = $('profileClassSel');
-    csel.innerHTML = CLASS_OPTIONS.map((o) => '<option value="' + o.v + '"' + (o.v === cls ? ' selected' : '') + '>' + o.t + '</option>').join('');
-    csel.onchange = (e) => setClass(e.target.value);
     $('profileEmail').textContent = signedIn ? (state.user.email || '') : '';
     // Show the child's chosen boy/girl avatar (tap to switch).
     $('profilePhoto').hidden = true;
     $('profileAvatar').hidden = false;
     $('profileAvatar').textContent = getAvatar();
     $('profileAvatar').title = 'Tap to change character';
-    const total = parseInt(localStorage.getItem('ll_points_total') || '0', 10);
+    const total = getTotal();
     $('statTotal').textContent = total;
     $('statToday').textContent = getTodayStars();
     $('statBadge').textContent = levelBadge(total);
+    // Difficulty auto-adapts to progress — show the current stage.
+    $('profileDifficulty').textContent = '🎯 Challenge: ' + LEVEL_NAMES[currentLevel() - 1] + ' (grows as you earn stars)';
     $('profileSignIn').hidden = signedIn || !fb.enabled;
     $('profileSignOut').hidden = !signedIn;
     $('profileSignedOutNote').hidden = signedIn || !fb.enabled;
@@ -1110,25 +1103,14 @@
     return wrap;
   }
 
-  // Class / grade dropdown — two difficulty tiers. Games scale to the choice.
-  const CLASS_OPTIONS = [
-    { v: 'PP1', t: 'KG / PP1' },
-    { v: 'PP2', t: 'PP2 / PP3' },
-  ];
-  // Difficulty level from the child's class: KG/PP1 -> easier, PP2/PP3 -> harder.
+  // Difficulty AUTO-ADAPTS to the child's progress (total stars) — no manual
+  // class/level picker. As they earn more stars, games get harder. This is the
+  // seed for future AI/ML personalization.
+  const LEVEL_NAMES = ['Starter', 'Growing', 'Champion'];
+  const LEVEL_STEPS = [80, 250]; // <80 -> lvl1, 80-249 -> lvl2, 250+ -> lvl3
   function currentLevel() {
-    const c = (state.profile && state.profile.class) || localStorage.getItem('ll_class') || 'PP1';
-    return (c === 'PP2' || c === 'PP3') ? 2 : 1;
-  }
-  function entryClassSelect(current) {
-    const sel = document.createElement('select');
-    sel.className = 'name-input entry-field entry-select';
-    sel.setAttribute('aria-label', 'Class');
-    const cur = current || CLASS_OPTIONS[0].v;
-    sel.innerHTML = CLASS_OPTIONS
-      .map((o) => '<option value="' + o.v + '"' + (o.v === cur ? ' selected' : '') + '>' + o.t + '</option>')
-      .join('');
-    return sel;
+    const pts = getTotal();
+    return pts >= LEVEL_STEPS[1] ? 3 : pts >= LEVEL_STEPS[0] ? 2 : 1;
   }
 
   // "Enter to have fun" sign-in: collects name + school (+ optional parent contact).
@@ -1139,7 +1121,6 @@
     note.textContent = '👩‍👧 Grown-up: please fill this in';
     const nameIn = entryInput("Child's name", (state.name && state.name !== 'Star') ? state.name : '', 14);
     const schoolIn = entryInput('School name', localStorage.getItem('ll_school') || '', 40);
-    const classSel = entryClassSelect(localStorage.getItem('ll_class'));
     const parentIn = entryInput('Parent phone or email (optional)', localStorage.getItem('ll_parent') || '', 60);
     const btn = document.createElement('button');
     btn.className = 'welcome-opt welcome-start';
@@ -1147,19 +1128,17 @@
     const go = () => {
       const child = nameIn.value.trim();
       const school = schoolIn.value.trim();
-      const cls = classSel.value;
       const parent = parentIn.value.trim();
       if (!child) return nudge(nameIn);
       if (!school) return nudge(schoolIn);
       state.name = child.slice(0, 14);
       localStorage.setItem('ll_name', state.name);
       localStorage.setItem('ll_school', school);
-      localStorage.setItem('ll_class', cls);
       localStorage.setItem('ll_parent', parent);
       // Log each new/changed signup once per device (don't spam on every visit).
-      const sig = child + '|' + school + '|' + cls + '|' + parent;
+      const sig = child + '|' + school + '|' + parent;
       if (localStorage.getItem('ll_signup_sig') !== sig) {
-        recordSignup({ child: child, school: school, class: cls, parent: parent, ts: new Date().toISOString(), ref: document.referrer || '', ua: navigator.userAgent });
+        recordSignup({ child: child, school: school, parent: parent, ts: new Date().toISOString(), ref: document.referrer || '', ua: navigator.userAgent });
         localStorage.setItem('ll_signup_sig', sig);
       }
       stepMood();
@@ -1169,7 +1148,6 @@
     body.appendChild(note);
     body.appendChild(nameIn);
     body.appendChild(schoolIn);
-    body.appendChild(classSel);
     body.appendChild(parentIn);
     body.appendChild(btn);
     setTimeout(() => { try { nameIn.focus(); } catch (e) {} }, 120);
