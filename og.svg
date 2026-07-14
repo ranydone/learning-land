@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff6e6"/>
+      <stop offset="0.5" stop-color="#ffe6f2"/>
+      <stop offset="1" stop-color="#e6f7ff"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff5da2"/>
+      <stop offset="0.4" stop-color="#fb8500"/>
+      <stop offset="0.7" stop-color="#9b5de5"/>
+      <stop offset="1" stop-color="#3aa0ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g fill="none" stroke-width="26" stroke-linecap="round" transform="translate(600 250)">
+    <path d="M-190 60 A190 190 0 0 1 190 60" stroke="#ff4d6d"/>
+    <path d="M-150 60 A150 150 0 0 1 150 60" stroke="#ff9f1c"/>
+    <path d="M-110 60 A110 110 0 0 1 110 60" stroke="#ffd60a"/>
+    <path d="M-70 60 A70 70 0 0 1 70 60" stroke="#2ec4b6"/>
+    <path d="M-30 60 A30 30 0 0 1 30 60" stroke="#3a86ff"/>
+  </g>
+  <text x="600" y="440" text-anchor="middle" font-family="Baloo 2, Verdana, sans-serif" font-weight="800" font-size="130" fill="url(#ink)">Pogogy</text>
+  <text x="600" y="520" text-anchor="middle" font-family="Verdana, sans-serif" font-weight="700" font-size="42" fill="#6b5b8a">Fun, safe learning for little ones</text>
+  <text x="600" y="580" text-anchor="middle" font-family="Verdana, sans-serif" font-weight="600" font-size="30" fill="#9b5de5">Numbers · Letters · Time · Stories · and more 🌈</text>
+</svg>
