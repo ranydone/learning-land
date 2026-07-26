@@ -630,6 +630,27 @@
       { e: '🍎', label: 'Get apple' }, { e: '🚰', label: 'Wash it' }, { e: '😋', label: 'Take a bite' },
       { e: '🍏', label: 'Eat it all' }, { e: '🗑️', label: 'Throw core' },
     ] },
+    // --- Health & hygiene: keeping germs away ---
+    { title: 'Before You Eat', steps: [
+      { e: '🖐️', label: 'Dirty hands' }, { e: '🚰', label: 'Turn on water' }, { e: '🧼', label: 'Wash with soap' },
+      { e: '🧻', label: 'Dry hands' }, { e: '🍽️', label: 'Now eat!' },
+    ] },
+    { title: 'Cover Your Sneeze', steps: [
+      { e: '🤧', label: 'Feel a sneeze' }, { e: '🙈', label: 'Turn away' }, { e: '💪', label: 'Sneeze in elbow' },
+      { e: '🧼', label: 'Wash hands' }, { e: '😊', label: 'Germs gone!' },
+    ] },
+    { title: 'After the Toilet', steps: [
+      { e: '🚽', label: 'Use toilet' }, { e: '🚾', label: 'Flush it' }, { e: '🧼', label: 'Wash with soap' },
+      { e: '🧻', label: 'Dry hands' }, { e: '😊', label: 'All clean!' },
+    ] },
+    { title: 'Blow Your Nose', steps: [
+      { e: '🤧', label: 'Runny nose' }, { e: '🧻', label: 'Take a tissue' }, { e: '👃', label: 'Blow your nose' },
+      { e: '🗑️', label: 'Throw tissue' }, { e: '🧼', label: 'Wash hands' },
+    ] },
+    { title: 'Stay Healthy', steps: [
+      { e: '🥗', label: 'Eat veggies' }, { e: '💧', label: 'Drink water' }, { e: '🏃', label: 'Run and play' },
+      { e: '🛁', label: 'Keep clean' }, { e: '😴', label: 'Sleep well' },
+    ] },
   ];
   let lastRoutine = -1;
 
