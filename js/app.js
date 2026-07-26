@@ -156,9 +156,10 @@
     document.querySelectorAll('.tile').forEach(t => {
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
-          : t.dataset.game === 'calendar' ? startCalendar()
-            : t.dataset.game === 'clock' ? startClock()
-              : startGame(t.dataset.game));
+          : t.dataset.routine ? startRoutine()
+            : t.dataset.game === 'calendar' ? startCalendar()
+              : t.dataset.game === 'clock' ? startClock()
+                : startGame(t.dataset.game));
     });
   }
 
@@ -543,14 +544,14 @@
     feed.className = 'feedback';
     feed.textContent = 'Drag them into order — there are ' + N + ' ' + kind + '!';
 
-    const slotsEl = $('seqSlots'); slotsEl.innerHTML = '';
+    const slotsEl = $('seqSlots'); slotsEl.innerHTML = ''; slotsEl.classList.remove('seq-visual');
     const slotEls = [];
     for (let i = 0; i < N; i++) {
       const s = document.createElement('div'); s.className = 'seq-slot';
       s.innerHTML = '<span class="seq-num">' + (i + 1) + '</span>';
       slotsEl.appendChild(s); slotEls.push(s);
     }
-    const trayEl = $('seqTray'); trayEl.innerHTML = '';
+    const trayEl = $('seqTray'); trayEl.innerHTML = ''; trayEl.classList.remove('seq-visual');
     const R = makeRNG('seq-' + kind + '-' + Date.now() + '-' + Math.random());
     R.shuffle(ordered).forEach(function (short) {
       const t = document.createElement('button');
@@ -599,6 +600,115 @@
       btn.className = 'big-btn play-again seq-next';
       btn.textContent = 'Next ▶️';
       btn.onclick = function () { onDone(); };
+      trayEl.appendChild(btn);
+    }
+  }
+
+  /* ---------- MY DAY (routine ordering, picture tiles) ---------- */
+  const ROUTINES = [
+    { title: 'Morning Time', steps: [
+      { e: '🌅', label: 'Wake up' }, { e: '🪥', label: 'Brush teeth' }, { e: '🛁', label: 'Take a bath' },
+      { e: '👕', label: 'Wear dress' }, { e: '🍳', label: 'Eat eggs' }, { e: '🚌', label: 'Catch the bus' },
+    ] },
+    { title: 'Bedtime', steps: [
+      { e: '🍽️', label: 'Eat dinner' }, { e: '🛁', label: 'Take a bath' }, { e: '🪥', label: 'Brush teeth' },
+      { e: '👚', label: 'Wear PJs' }, { e: '📖', label: 'Read a story' }, { e: '😴', label: 'Go to sleep' },
+    ] },
+    { title: 'Wash Your Hands', steps: [
+      { e: '💧', label: 'Wet hands' }, { e: '🧼', label: 'Use soap' }, { e: '🙌', label: 'Rub well' },
+      { e: '🚰', label: 'Rinse' }, { e: '🧻', label: 'Dry hands' },
+    ] },
+    { title: 'Get Ready for School', steps: [
+      { e: '⏰', label: 'Wake up' }, { e: '👕', label: 'Get dressed' }, { e: '🥪', label: 'Eat snack' },
+      { e: '🎒', label: 'Pack bag' }, { e: '👟', label: 'Wear shoes' }, { e: '🏫', label: 'Go to school' },
+    ] },
+    { title: 'Plant a Seed', steps: [
+      { e: '🕳️', label: 'Dig a hole' }, { e: '🌰', label: 'Drop the seed' }, { e: '🟤', label: 'Cover soil' },
+      { e: '💧', label: 'Give water' }, { e: '🌱', label: 'It grows!' },
+    ] },
+    { title: 'Eat an Apple', steps: [
+      { e: '🍎', label: 'Get apple' }, { e: '🚰', label: 'Wash it' }, { e: '😋', label: 'Take a bite' },
+      { e: '🍏', label: 'Eat it all' }, { e: '🗑️', label: 'Throw core' },
+    ] },
+  ];
+  let lastRoutine = -1;
+
+  function startRoutine() {
+    const R = makeRNG('routine-pick-' + Date.now() + '-' + Math.random());
+    let idx;
+    do { idx = R.int(0, ROUTINES.length - 1); } while (ROUTINES.length > 1 && idx === lastRoutine);
+    lastRoutine = idx;
+    routineActivity(ROUTINES[idx]);
+  }
+
+  function routineActivity(routine) {
+    show('sequence');
+    const steps = routine.steps;
+    const N = steps.length;
+    let nextIndex = 0;
+
+    $('seqTitle').textContent = '🌅 ' + routine.title;
+    const feed = $('seqFeedback');
+    feed.className = 'feedback';
+    feed.textContent = 'Put it in the right order — what comes first?';
+
+    const slotsEl = $('seqSlots'); slotsEl.innerHTML = ''; slotsEl.classList.add('seq-visual');
+    const slotEls = [];
+    for (let i = 0; i < N; i++) {
+      const s = document.createElement('div'); s.className = 'seq-slot';
+      s.innerHTML = '<span class="seq-num">' + (i + 1) + '</span>';
+      slotsEl.appendChild(s); slotEls.push(s);
+    }
+    const trayEl = $('seqTray'); trayEl.innerHTML = ''; trayEl.classList.add('seq-visual');
+    const R = makeRNG('routine-' + routine.title + '-' + Date.now() + '-' + Math.random());
+    R.shuffle(steps.map(function (_, i) { return i; })).forEach(function (idx) {
+      const st = steps[idx];
+      const t = document.createElement('button');
+      t.className = 'seq-tile seq-tile-visual'; t.type = 'button'; t.dataset.idx = idx;
+      t.innerHTML = '<span class="seq-emoji">' + st.e + '</span><span class="seq-lbl">' + st.label + '</span>';
+      trayEl.appendChild(t);
+      makeSeqDraggable(t, attempt);
+    });
+    announce();
+
+    function announce() {
+      slotEls.forEach(function (s, i) { s.classList.toggle('active', i === nextIndex); });
+      if (nextIndex < N) {
+        seqSpeakText = 'What comes ' + (nextIndex === 0 ? 'first' : 'next') + '? ' + steps[nextIndex].label;
+        speak(seqSpeakText);
+      }
+    }
+
+    function attempt(tile) {
+      if (tile.disabled) return;
+      const idx = parseInt(tile.dataset.idx, 10);
+      if (idx === nextIndex) {
+        const slot = slotEls[nextIndex];
+        slot.classList.remove('active'); slot.classList.add('filled'); slot.innerHTML = '';
+        tile.classList.add('placed'); tile.disabled = true;
+        slot.appendChild(tile);
+        nextIndex++;
+        if (nextIndex === N) finish(); else announce();
+      } else {
+        tile.classList.add('wrong'); setTimeout(function () { tile.classList.remove('wrong'); }, 450);
+        feed.className = 'feedback try';
+        feed.textContent = '🔄 Not yet — first we ' + steps[nextIndex].label.toLowerCase();
+        seqSpeakText = 'Not yet. First we ' + steps[nextIndex].label.toLowerCase();
+        speak(seqSpeakText);
+      }
+    }
+
+    function finish() {
+      addStars(1);
+      feed.className = 'feedback good';
+      feed.textContent = '🎉 Yay! You put your ' + routine.title + ' in order!';
+      seqSpeakText = 'Well done! You got the whole routine in order!';
+      speak(seqSpeakText);
+      burst();
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again seq-next';
+      btn.textContent = '▶️ Another one';
+      btn.onclick = function () { startRoutine(); };
       trayEl.appendChild(btn);
     }
   }

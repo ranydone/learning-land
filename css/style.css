@@ -107,6 +107,7 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .t-add{background:linear-gradient(135deg,#06d6a0,#118ab2)}
 .t-cal{background:linear-gradient(135deg,#f9844a,#f3722c)}
 .t-clock{background:linear-gradient(135deg,#4cc9f0,#4361ee)}
+.t-routine{background:linear-gradient(135deg,#ffb703,#fb5607)}
 .t-daily{grid-column:1/-1}
 
 /* professional footer */
@@ -240,6 +241,13 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .seq-tile.wrong{animation:shake .4s ease; background:#ffe0e6}
 .seq-tile.placed{width:100%; height:100%; box-shadow:none; background:transparent; color:var(--green); cursor:default; animation:pop .4s ease}
 .seq-next{max-width:220px; margin-top:4px}
+/* picture tiles (My Day routine) */
+.seq-slots.seq-visual .seq-slot{width:clamp(82px,25vw,112px); height:clamp(80px,23vw,104px)}
+.seq-tile-visual{flex-direction:column; gap:3px; padding:6px; width:clamp(82px,25vw,112px); height:clamp(80px,23vw,104px);
+  font-size:inherit; line-height:1.05}
+.seq-tile-visual .seq-emoji{font-size:clamp(30px,9vw,44px); line-height:1}
+.seq-tile-visual .seq-lbl{font-size:clamp(9px,2.7vw,12px); font-weight:800; color:var(--ink); text-align:center; line-height:1.05}
+.seq-tile-visual.placed .seq-lbl{color:var(--green)}
 
 /* ---------- PROFILE ---------- */
 .profile-card{margin:18px auto 0; background:var(--card); border-radius:var(--radius); padding:clamp(22px,6vw,40px);

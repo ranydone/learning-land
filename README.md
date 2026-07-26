@@ -22,6 +22,7 @@ tablet or computer.
 | 🧠 **Think & Code** | Logic / early coding | Continue the pattern, odd one out, biggest/smallest, "what happens first?", more/fewer |
 | 📖 **Story Time** | Listening, values, imagination | Read-aloud picture stories (Thirsty Crow, Tortoise & Hare, Lion & Mouse…) each ending in a gentle moral. A new story each day, plus a "New Story" button |
 | 🧩 **Memory Match** | Matching, focus, vocabulary | All cards stay face-up — tap two of the same picture to pair them; each picture's name is read aloud, so she learns words while she plays |
+| 🌅 **My Day** | Daily routines & good habits | Drag/tap picture tiles into the right order (Morning, Bedtime, Wash Hands, Get Ready for School, Plant a Seed, Eat an Apple) — sequencing everyday behaviour |
 
 ### Why "Think & Code" counts as coding for a 5-year-old
 Early coding is really **logical thinking**: spotting patterns, sequencing steps
