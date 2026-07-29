@@ -409,7 +409,106 @@
         options: R.shuffle([{ label: 'A', correct: ans === 'A' }, { label: 'B', correct: ans === 'B' }]),
       };
     },
-    all(R) { return R.pick([this.pattern, this.pattern, this.oddOneOut, this.sizeOrder, this.sequenceOrder, this.sorting]).call(this, R); },
+    // Directions — the basis of movement commands in coding (arrows).
+    direction(R) {
+      const dirs = [{ w: 'UP', a: '⬆️' }, { w: 'DOWN', a: '⬇️' }, { w: 'LEFT', a: '⬅️' }, { w: 'RIGHT', a: '➡️' }];
+      const target = R.pick(dirs);
+      return {
+        module: 'logic',
+        prompt: `Help the robot go ${target.w}! Tap the arrow.`,
+        speak: `Which arrow points ${target.w}?`,
+        display: { kind: 'huge', value: '🤖' },
+        options: R.shuffle(dirs.map((d) => ({ label: '', emoji: d.a, correct: d.a === target.a }))),
+      };
+    },
+    // If–then conditionals.
+    ifThen(R) {
+      const items = [
+        { q: 'If the light is 🔴 RED, what do you do?', right: { e: '🛑', name: 'Stop' }, wrong: [{ e: '🏃', name: 'Run' }, { e: '🚗', name: 'Go fast' }] },
+        { q: 'If the light is 🟢 GREEN, what do you do?', right: { e: '✅', name: 'Go' }, wrong: [{ e: '🛑', name: 'Stop' }, { e: '😴', name: 'Sleep' }] },
+        { q: 'If it is cold ❄️, what do you wear?', right: { e: '🧥', name: 'A jacket' }, wrong: [{ e: '🩳', name: 'Shorts' }, { e: '👙', name: 'A swimsuit' }] },
+        { q: 'If you feel happy, what do you do?', right: { e: '😄', name: 'Smile' }, wrong: [{ e: '😢', name: 'Cry' }, { e: '😠', name: 'Frown' }] },
+        { q: 'If your toy breaks, what do you do?', right: { e: '🔧', name: 'Fix it' }, wrong: [{ e: '😡', name: 'Get angry' }, { e: '🗑️', name: 'Throw it away' }] },
+        { q: 'If it is dark 🌙, what do you turn on?', right: { e: '💡', name: 'A light' }, wrong: [{ e: '🌀', name: 'A fan' }, { e: '📺', name: 'The TV' }] },
+        { q: 'If you are thirsty, what do you drink?', right: { e: '💧', name: 'Water' }, wrong: [{ e: '🧊', name: 'Ice cubes' }, { e: '🍿', name: 'Popcorn' }] },
+      ];
+      const s = R.pick(items);
+      const opts = R.shuffle([{ label: s.right.name, emoji: s.right.e, correct: true }, ...s.wrong.map((w) => ({ label: w.name, emoji: w.e, correct: false }))]);
+      return { module: 'logic', prompt: s.q, speak: s.q, display: { kind: 'none', value: '' }, options: opts };
+    },
+    // Pattern completion — the missing one is in the MIDDLE.
+    whatIsMissing(R) {
+      const set = R.pick(C.patternSets);
+      const seq = [];
+      for (let i = 0; i < 3; i++) seq.push(...set);
+      const hideIdx = R.int(set.length, seq.length - 2);
+      const ans = seq[hideIdx];
+      const shown = seq.map((e, i) => (i === hideIdx ? '❓' : e)).join(' ');
+      const pool = [...new Set(C.patternSets.flat())].filter((e) => e !== ans).map((e) => ({ label: '', emoji: e }));
+      return {
+        module: 'logic',
+        prompt: 'What is MISSING in the pattern?',
+        speak: 'Look at the pattern. What is missing in the middle?',
+        display: { kind: 'emojis', value: shown },
+        options: buildOptions(R, { label: '', emoji: ans }, pool),
+      };
+    },
+    // Same or different — equality/comparison.
+    sameDifferent(R) {
+      const pool = [...C.fruits, ...C.animals, ...C.shapes].map((x) => x.e);
+      const a = R.pick(pool);
+      const same = R.bool();
+      let b = a;
+      if (!same) { let g = 0; do { b = R.pick(pool); } while (b === a && g++ < 20); }
+      return {
+        module: 'logic',
+        prompt: 'Are these the SAME or DIFFERENT?',
+        speak: 'Are these two the same, or different?',
+        display: { kind: 'huge', value: a + '  ' + b },
+        options: R.shuffle([{ label: 'Same', correct: same }, { label: 'Different', correct: !same }]),
+      };
+    },
+    // Debugging — find the item that breaks the pattern.
+    findMistake(R) {
+      const set = R.pick(C.patternSets.filter((s) => s.length === 2));
+      const a = set[0], b = set[1];
+      const seq = [a, b, a, b, a, b];
+      const allE = [...new Set(C.patternSets.flat())];
+      let intruder; let g = 0;
+      do { intruder = R.pick(allE); } while ((intruder === a || intruder === b) && g++ < 30);
+      seq[R.int(2, 5)] = intruder;
+      return {
+        module: 'logic',
+        prompt: 'Find the MISTAKE! Tap the one that is wrong.',
+        speak: 'This pattern has a mistake. Tap the one that is wrong.',
+        display: { kind: 'emojis', value: seq.join('  ') },
+        options: R.shuffle([{ label: '', emoji: intruder, correct: true }, { label: '', emoji: a, correct: false }, { label: '', emoji: b, correct: false }]),
+      };
+    },
+    // Real-world size comparison (yes/no).
+    compareSize(R) {
+      const items = [
+        { e: '🐘', s: 10 }, { e: '🦒', s: 9 }, { e: '🐴', s: 7 }, { e: '🐶', s: 5 }, { e: '🐱', s: 4 },
+        { e: '🐭', s: 2 }, { e: '🐜', s: 1 }, { e: '🌳', s: 8 }, { e: '🌻', s: 3 }, { e: '🚌', s: 8 }, { e: '🚲', s: 5 }, { e: '🏠', s: 9 },
+      ];
+      const x = R.pick(items);
+      let y = R.pick(items); let g = 0;
+      while (y.s === x.s && g++ < 20) y = R.pick(items);
+      const isBigger = x.s > y.s;
+      return {
+        module: 'logic',
+        prompt: `Is the ${x.e} bigger than the ${y.e}?`,
+        speak: 'Is the first one bigger than the second one?',
+        display: { kind: 'huge', value: x.e + '  ' + y.e },
+        options: R.shuffle([{ label: 'Yes', emoji: '✅', correct: isBigger }, { label: 'No', emoji: '❌', correct: !isBigger }]),
+      };
+    },
+    all(R) {
+      const pool = [this.pattern, this.oddOneOut, this.sizeOrder, this.sequenceOrder, this.sorting,
+        this.direction, this.ifThen, this.whatIsMissing, this.sameDifferent, this.findMistake, this.compareSize];
+      if (LEVEL >= 2) pool.push(this.findMistake, this.whatIsMissing, this.ifThen); // more logic/debugging for higher levels
+      return R.pick(pool).call(this, R);
+    },
   };
 
   /* ================= ADD UP (basic addition) ================= */
