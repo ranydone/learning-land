@@ -108,6 +108,7 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .t-cal{background:linear-gradient(135deg,#f9844a,#f3722c)}
 .t-clock{background:linear-gradient(135deg,#4cc9f0,#4361ee)}
 .t-routine{background:linear-gradient(135deg,#ffb703,#fb5607)}
+.t-pizza{background:linear-gradient(135deg,#ff9f1c,#d62828)}
 .t-daily{grid-column:1/-1}
 
 /* professional footer */
@@ -224,6 +225,28 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .clock-face .clk-num{cursor:pointer}
 .clock-face .clk-num:active{fill:var(--orange)}
 .clock-face .seq-next{margin-top:16px}
+
+/* ---------- PIZZA CHEF ---------- */
+.pizza-stage{display:flex; justify-content:center; margin-top:16px}
+.pizza-base{position:relative; width:clamp(220px,68vw,300px); height:clamp(220px,68vw,300px); border-radius:50%;
+  background:#faf6ee; border:9px dashed #e0cfab; display:flex; align-items:center; justify-content:center;
+  transition:background .3s ease, border-color .3s ease; box-shadow:var(--shadow)}
+.pizza-base.has-base{background:#f2d9a0; border-style:solid; border-color:#e6b85c}
+.pizza-base.has-sauce{background:#ff6b4a}
+.pizza-base.has-cheese{background:radial-gradient(circle,#ffd85e,#ffc23c)}
+.pizza-base.done{background:none; border:none; box-shadow:none}
+.pizza-topping{position:absolute; font-size:clamp(20px,6vw,30px); transform:translate(-50%,-50%); animation:pop .4s ease}
+.pizza-emoji{font-size:clamp(120px,34vw,190px); line-height:1}
+.pizza-tray{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center; margin:18px auto 0; max-width:560px; min-height:70px}
+.pizza-item{font-family:inherit; border:none; border-radius:16px; background:#fff; box-shadow:0 5px 0 rgba(0,0,0,.12);
+  padding:8px 6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; width:clamp(76px,20vw,96px)}
+.pizza-item:active{transform:translateY(3px)}
+.pizza-item .pi-e{font-size:clamp(30px,9vw,40px); line-height:1}
+.pizza-item .pi-l{font-size:clamp(10px,2.8vw,12px); font-weight:800; color:var(--ink)}
+.pizza-item.next{box-shadow:0 0 0 4px rgba(251,133,0,.3), 0 5px 0 rgba(0,0,0,.12); animation:seqpulse 1.1s ease-in-out infinite}
+.pizza-item.done{opacity:.4; cursor:default}
+.pizza-item.wrong{animation:shake .4s ease; background:#ffe0e6}
+.pizza-again{max-width:240px}
 
 /* ---------- SEQUENCE (drag & drop) ---------- */
 .seq-slots{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:18px auto 0; max-width:620px}

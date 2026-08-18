@@ -46,7 +46,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=24" />
+  <link rel="stylesheet" href="css/style.css?v=27" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 </head>
@@ -164,6 +164,11 @@
         <span class="tile-name">My Day</span>
         <span class="tile-sub">Put it in order</span>
       </button>
+      <button class="tile t-pizza" data-pizza="open">
+        <span class="tile-emoji">🍕</span>
+        <span class="tile-name">Pizza Chef</span>
+        <span class="tile-sub">Cook step by step</span>
+      </button>
     </section>
 
     <footer class="site-foot">
@@ -263,6 +268,20 @@
     <div id="clockFeedback" class="feedback"></div>
   </main>
 
+  <!-- PIZZA CHEF SCREEN -->
+  <main id="pizza" class="screen">
+    <header class="play-top">
+      <button id="pizzaHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info" id="pizzaTitle">🍕 Make a Pizza!</div>
+      <button id="pizzaSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <div class="pizza-stage">
+      <div id="pizzaBase" class="pizza-base"><span id="pizzaEmoji" class="pizza-emoji"></span></div>
+    </div>
+    <div id="pizzaFeedback" class="feedback"></div>
+    <div id="pizzaTray" class="pizza-tray"></div>
+  </main>
+
   <!-- PROFILE SCREEN -->
   <main id="profile" class="screen">
     <header class="play-top">
@@ -314,6 +333,6 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=23"></script>
   <script src="js/generators.js?v=26"></script>
-  <script src="js/app.js?v=25"></script>
+  <script src="js/app.js?v=27"></script>
 </body>
 </html>

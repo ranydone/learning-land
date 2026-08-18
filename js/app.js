@@ -157,9 +157,10 @@
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
           : t.dataset.routine ? startRoutine()
-            : t.dataset.game === 'calendar' ? startCalendar()
-              : t.dataset.game === 'clock' ? startClock()
-                : startGame(t.dataset.game));
+            : t.dataset.pizza ? startPizza()
+              : t.dataset.game === 'calendar' ? startCalendar()
+                : t.dataset.game === 'clock' ? startClock()
+                  : startGame(t.dataset.game));
     });
   }
 
@@ -736,6 +737,98 @@
 
   $('seqHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('seqSpeak').onclick = function () { if (seqSpeakText) speak(seqSpeakText); };
+
+  /* ---------- PIZZA CHEF (build a pizza step by step) ---------- */
+  let pizzaSpeakText = '';
+
+  function startPizza() {
+    show('pizza');
+    const base = $('pizzaBase');
+    base.className = 'pizza-base';
+    base.querySelectorAll('.pizza-topping').forEach(function (n) { n.remove(); });
+    $('pizzaEmoji').textContent = '';
+    $('pizzaTitle').textContent = '🍕 Make a Pizza!';
+
+    const recipe = [
+      { e: '🫓', label: 'Dough', layer: 'has-base' },
+      { e: '🥫', label: 'Sauce', layer: 'has-sauce' },
+      { e: '🧀', label: 'Cheese', layer: 'has-cheese' },
+      { e: '🍅', label: 'Tomato', top: '🍅' },
+      { e: '🍄', label: 'Mushroom', top: '🍄' },
+      { e: '🫒', label: 'Olives', top: '🫒' },
+      { e: '🔥', label: 'Bake!', bake: true },
+    ];
+    let nextIndex = 0;
+    const tray = $('pizzaTray'); tray.innerHTML = '';
+    const feed = $('pizzaFeedback');
+    const itemEls = [];
+    recipe.forEach(function (r, i) {
+      const b = document.createElement('button');
+      b.className = 'pizza-item'; b.type = 'button';
+      b.innerHTML = '<span class="pi-e">' + r.e + '</span><span class="pi-l">' + r.label + '</span>';
+      b.onclick = function () { pick(i, b); };
+      tray.appendChild(b); itemEls.push(b);
+    });
+    announce();
+
+    function announce() {
+      itemEls.forEach(function (b, i) { b.classList.toggle('next', i === nextIndex); });
+      const r = recipe[nextIndex];
+      if (r.bake) { feed.className = 'feedback'; feed.textContent = '🔥 Now tap Bake!'; pizzaSpeakText = 'Now bake the pizza!'; }
+      else { feed.className = 'feedback'; feed.textContent = '👉 Add the ' + r.label; pizzaSpeakText = 'Add the ' + r.label; }
+      speak(pizzaSpeakText);
+    }
+
+    function scatter(emoji, n) {
+      for (let k = 0; k < n; k++) {
+        const s = document.createElement('span');
+        s.className = 'pizza-topping'; s.textContent = emoji;
+        const ang = Math.random() * Math.PI * 2;
+        const rad = Math.random() * 0.34 + 0.04;
+        s.style.left = (50 + Math.cos(ang) * rad * 100) + '%';
+        s.style.top = (50 + Math.sin(ang) * rad * 100) + '%';
+        base.appendChild(s);
+      }
+    }
+
+    function pick(i, b) {
+      if (b.classList.contains('done')) return;
+      if (i !== nextIndex) {
+        b.classList.add('wrong'); setTimeout(function () { b.classList.remove('wrong'); }, 400);
+        feed.className = 'feedback try';
+        feed.textContent = '🔄 Not yet — add the ' + recipe[nextIndex].label + ' first!';
+        pizzaSpeakText = 'Not yet. First add the ' + recipe[nextIndex].label; speak(pizzaSpeakText);
+        return;
+      }
+      const r = recipe[i];
+      if (r.bake) { b.classList.remove('next'); b.classList.add('done'); b.disabled = true; return finish(); }
+      if (r.layer) base.classList.add(r.layer);
+      if (r.top) scatter(r.top, 4);
+      b.classList.remove('next'); b.classList.add('done'); b.disabled = true;
+      nextIndex++;
+      announce();
+    }
+
+    function finish() {
+      base.className = 'pizza-base done';
+      base.querySelectorAll('.pizza-topping').forEach(function (n) { n.remove(); });
+      $('pizzaEmoji').textContent = '🍕';
+      $('pizzaEmoji').style.animation = 'none'; void $('pizzaEmoji').offsetWidth; $('pizzaEmoji').style.animation = 'pop .5s ease';
+      $('pizzaTitle').textContent = '🎉 Pizza Ready!';
+      feed.className = 'feedback good'; feed.textContent = '🎉 Yummy! Your pizza is ready!';
+      pizzaSpeakText = 'Yummy! Your pizza is ready! Great job!'; speak(pizzaSpeakText);
+      addStars(1); burst();
+      tray.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again pizza-again';
+      btn.textContent = '🍕 Make Another';
+      btn.onclick = startPizza;
+      tray.appendChild(btn);
+    }
+  }
+
+  $('pizzaHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  $('pizzaSpeak').onclick = function () { if (pizzaSpeakText) speak(pizzaSpeakText); };
 
   /* ---------- CLOCK (tell the time) ---------- */
   let clockSpeakText = '';
