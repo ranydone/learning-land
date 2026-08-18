@@ -119,9 +119,8 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .alpha-tile{font-family:inherit; border:none; border-radius:14px; background:#fff; box-shadow:0 4px 0 rgba(0,0,0,.1);
   width:clamp(64px,19vw,86px); padding:6px 4px; display:flex; flex-direction:column; align-items:center; gap:1px;
   cursor:grab; touch-action:none; user-select:none}
-.alpha-tile .al-letter{font-size:clamp(16px,4.5vw,20px); font-weight:800; color:var(--purple)}
-.alpha-tile .al-emoji{font-size:clamp(26px,7vw,34px); line-height:1}
-.alpha-tile .al-word{font-size:clamp(8px,2.4vw,11px); font-weight:700; color:var(--ink-soft)}
+.alpha-tile .al-emoji{font-size:clamp(34px,9.5vw,46px); line-height:1}
+.alpha-tile .al-word{font-size:clamp(9px,2.7vw,13px); font-weight:800; color:var(--ink)}
 .alpha-tile.dragging{cursor:grabbing; box-shadow:0 12px 22px rgba(120,80,180,.35); transform:scale(1.1); z-index:1000}
 .alpha-tile.wrong{animation:shake .4s ease; background:#ffe0e6}
 .alpha-tile.done{opacity:.32; box-shadow:none}

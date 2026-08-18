@@ -867,20 +867,21 @@
 
   function startAlphabet() {
     show('alphabet');
-    const items = (window.CONTENT.abcThings || []).slice(); // A..Z, in order
+    const ordered = (window.CONTENT.abcThings || []).slice(); // target sequence: A..Z
     let idx = 0;
     const grid = $('alphaGrid'); grid.innerHTML = '';
-    items.forEach(function (it) {
+    const R = makeRNG('atoz-' + Date.now() + '-' + Math.random());
+    R.shuffle(ordered).forEach(function (it) { // tiles are RANDOMLY placed, and show no letter
       const t = document.createElement('button');
       t.className = 'alpha-tile'; t.type = 'button'; t.dataset.letter = it.l;
-      t.innerHTML = '<span class="al-letter">' + it.l + '</span><span class="al-emoji">' + it.e + '</span><span class="al-word">' + it.word + '</span>';
+      t.innerHTML = '<span class="al-emoji">' + it.e + '</span><span class="al-word">' + it.word + '</span>';
       makeGrabbable(t, function () { pick(it, t); });
       grid.appendChild(t);
     });
     updateBar();
 
     function updateBar() {
-      const it = items[idx];
+      const it = ordered[idx];
       $('alphaTarget').textContent = it.l;
       $('alphaTitle').textContent = '🔠 Find the letter ' + it.l;
       $('alphaFeedback').className = 'feedback';
@@ -891,12 +892,12 @@
 
     function pick(it, t) {
       if (t.classList.contains('done')) return;
-      const target = items[idx];
+      const target = ordered[idx];
       if (it.l === target.l) {
         t.classList.add('done');
         idx++;
         if (idx % 5 === 0) addStars(1); // a star every 5 letters
-        if (idx >= items.length) finish(); else updateBar();
+        if (idx >= ordered.length) finish(); else updateBar();
       } else {
         t.classList.add('wrong'); setTimeout(function () { t.classList.remove('wrong'); }, 400);
         $('alphaFeedback').className = 'feedback try';
