@@ -537,6 +537,11 @@
         options: R.shuffle([{ label: 'Yes', emoji: '✅', correct: isBigger }, { label: 'No', emoji: '❌', correct: !isBigger }]),
       };
     },
+    // Patterns-only mode (dedicated "Patterns" tile).
+    patternsAll(R) {
+      const pool = [this.pattern, this.pattern, this.pattern, this.pattern, this.whatIsMissing, this.whatIsMissing, this.growingPattern, this.findMistake];
+      return R.pick(pool).call(this, R);
+    },
     all(R) {
       // Patterns are the heart of Think & Code — weight them heavily.
       const pool = [this.pattern, this.pattern, this.pattern, this.whatIsMissing, this.whatIsMissing,
@@ -752,6 +757,7 @@
       case 'alphabets': return ABC.all(R);
       case 'quiz': return QUIZ.all(R);
       case 'logic': return LOGIC.all(R);
+      case 'patterns': return LOGIC.patternsAll(R);
       case 'addition': return ADD.all(R);
       case 'calendar': return CAL.all(R);
       case 'clock': return CLOCK.all(R);
