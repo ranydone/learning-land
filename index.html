@@ -46,7 +46,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=27" />
+  <link rel="stylesheet" href="css/style.css?v=28" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 </head>
@@ -164,10 +164,10 @@
         <span class="tile-name">My Day</span>
         <span class="tile-sub">Put it in order</span>
       </button>
-      <button class="tile t-pizza" data-pizza="open">
-        <span class="tile-emoji">🍕</span>
-        <span class="tile-name">Pizza Chef</span>
-        <span class="tile-sub">Cook step by step</span>
+      <button class="tile t-games" data-games="open">
+        <span class="tile-emoji">🎮</span>
+        <span class="tile-name">Games</span>
+        <span class="tile-sub">Fun mini games</span>
       </button>
     </section>
 
@@ -268,6 +268,22 @@
     <div id="clockFeedback" class="feedback"></div>
   </main>
 
+  <!-- GAMES HUB SCREEN -->
+  <main id="games" class="screen">
+    <header class="play-top">
+      <button id="gamesHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info">🎮 Games</div>
+      <span style="width:54px"></span>
+    </header>
+    <section class="tiles games-tiles">
+      <button class="tile t-pizza" data-pizza="open">
+        <span class="tile-emoji">🍕</span>
+        <span class="tile-name">Pizza Chef</span>
+        <span class="tile-sub">Cook step by step</span>
+      </button>
+    </section>
+  </main>
+
   <!-- PIZZA CHEF SCREEN -->
   <main id="pizza" class="screen">
     <header class="play-top">
@@ -333,6 +349,6 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=23"></script>
   <script src="js/generators.js?v=26"></script>
-  <script src="js/app.js?v=27"></script>
+  <script src="js/app.js?v=28"></script>
 </body>
 </html>

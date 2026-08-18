@@ -109,6 +109,8 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .t-clock{background:linear-gradient(135deg,#4cc9f0,#4361ee)}
 .t-routine{background:linear-gradient(135deg,#ffb703,#fb5607)}
 .t-pizza{background:linear-gradient(135deg,#ff9f1c,#d62828)}
+.t-games{background:linear-gradient(135deg,#9b5de5,#f15bb5)}
+.games-tiles{max-width:620px; margin:18px auto 0}
 .t-daily{grid-column:1/-1}
 
 /* professional footer */

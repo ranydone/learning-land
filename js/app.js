@@ -157,10 +157,11 @@
       t.onclick = () => (t.dataset.story ? openStory(null)
         : t.dataset.memory ? startMemory()
           : t.dataset.routine ? startRoutine()
-            : t.dataset.pizza ? startPizza()
-              : t.dataset.game === 'calendar' ? startCalendar()
-                : t.dataset.game === 'clock' ? startClock()
-                  : startGame(t.dataset.game));
+            : t.dataset.games ? openGames()
+              : t.dataset.pizza ? startPizza()
+                : t.dataset.game === 'calendar' ? startCalendar()
+                  : t.dataset.game === 'clock' ? startClock()
+                    : startGame(t.dataset.game));
     });
   }
 
@@ -829,6 +830,10 @@
 
   $('pizzaHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('pizzaSpeak').onclick = function () { if (pizzaSpeakText) speak(pizzaSpeakText); };
+
+  /* ---------- GAMES HUB (hosts mini-games; Pizza Chef for now) ---------- */
+  function openGames() { show('games'); }
+  $('gamesHome').onclick = function () { initHome(); show('home'); };
 
   /* ---------- CLOCK (tell the time) ---------- */
   let clockSpeakText = '';
