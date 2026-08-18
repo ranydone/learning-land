@@ -159,6 +159,7 @@
           : t.dataset.routine ? startRoutine()
             : t.dataset.games ? openGames()
               : t.dataset.pizza ? startPizza()
+                : t.dataset.alpha ? startAlphabet()
                 : t.dataset.game === 'calendar' ? startCalendar()
                   : t.dataset.game === 'clock' ? startClock()
                     : startGame(t.dataset.game));
@@ -831,9 +832,95 @@
   $('pizzaHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('pizzaSpeak').onclick = function () { if (pizzaSpeakText) speak(pizzaSpeakText); };
 
-  /* ---------- GAMES HUB (hosts mini-games; Pizza Chef for now) ---------- */
+  /* ---------- GAMES HUB (hosts mini-games) ---------- */
   function openGames() { show('games'); }
   $('gamesHome').onclick = function () { initHome(); show('home'); };
+
+  /* ---------- A TO Z (drag the alphabet in order) ---------- */
+  let alphaSpeakText = '';
+
+  // Pointer-based drag that also works as a tap; fires onRelease on any release.
+  function makeGrabbable(tile, onRelease) {
+    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    tile.addEventListener('pointerdown', function (e) {
+      if (tile.disabled) return;
+      dragging = true; sx = e.clientX; sy = e.clientY;
+      const r = tile.getBoundingClientRect(); ox = e.clientX - r.left; oy = e.clientY - r.top;
+      try { tile.setPointerCapture(e.pointerId); } catch (_) {}
+      tile.classList.add('dragging');
+      tile.style.width = r.width + 'px'; tile.style.height = r.height + 'px';
+      tile.style.position = 'fixed'; tile.style.left = r.left + 'px'; tile.style.top = r.top + 'px'; tile.style.zIndex = '1000';
+    });
+    tile.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      tile.style.left = (e.clientX - ox) + 'px'; tile.style.top = (e.clientY - oy) + 'px';
+    });
+    function end() {
+      if (!dragging) return; dragging = false;
+      tile.classList.remove('dragging');
+      tile.style.position = ''; tile.style.left = ''; tile.style.top = ''; tile.style.zIndex = ''; tile.style.width = ''; tile.style.height = '';
+      onRelease(tile);
+    }
+    tile.addEventListener('pointerup', end);
+    tile.addEventListener('pointercancel', end);
+  }
+
+  function startAlphabet() {
+    show('alphabet');
+    const items = (window.CONTENT.abcThings || []).slice(); // A..Z, in order
+    let idx = 0;
+    const grid = $('alphaGrid'); grid.innerHTML = '';
+    items.forEach(function (it) {
+      const t = document.createElement('button');
+      t.className = 'alpha-tile'; t.type = 'button'; t.dataset.letter = it.l;
+      t.innerHTML = '<span class="al-letter">' + it.l + '</span><span class="al-emoji">' + it.e + '</span><span class="al-word">' + it.word + '</span>';
+      makeGrabbable(t, function () { pick(it, t); });
+      grid.appendChild(t);
+    });
+    updateBar();
+
+    function updateBar() {
+      const it = items[idx];
+      $('alphaTarget').textContent = it.l;
+      $('alphaTitle').textContent = '🔠 Find the letter ' + it.l;
+      $('alphaFeedback').className = 'feedback';
+      $('alphaFeedback').textContent = 'Drag ' + it.l + ' — ' + it.l + ' for ' + it.word + '!';
+      alphaSpeakText = 'Find the letter ' + it.l + '. ' + it.l + ' for ' + it.word + '.';
+      speak(alphaSpeakText);
+    }
+
+    function pick(it, t) {
+      if (t.classList.contains('done')) return;
+      const target = items[idx];
+      if (it.l === target.l) {
+        t.classList.add('done');
+        idx++;
+        if (idx % 5 === 0) addStars(1); // a star every 5 letters
+        if (idx >= items.length) finish(); else updateBar();
+      } else {
+        t.classList.add('wrong'); setTimeout(function () { t.classList.remove('wrong'); }, 400);
+        $('alphaFeedback').className = 'feedback try';
+        $('alphaFeedback').textContent = '🔄 That is ' + it.l + '. We need ' + target.l + '!';
+        alphaSpeakText = 'That is ' + it.l + '. We need ' + target.l + '.';
+        speak(alphaSpeakText);
+      }
+    }
+
+    function finish() {
+      addStars(2);
+      $('alphaTitle').textContent = '🎉 A to Z done!';
+      $('alphaTarget').textContent = '🏆';
+      $('alphaDrop').textContent = 'You know the whole alphabet!';
+      $('alphaFeedback').className = 'feedback good';
+      $('alphaFeedback').textContent = '🎉 Amazing! You found A to Z!';
+      alphaSpeakText = 'Amazing! You found the whole alphabet, A to Z!';
+      speak(alphaSpeakText);
+      for (let k = 0; k < 4; k++) setTimeout(burst, k * 260);
+    }
+  }
+
+  $('alphaHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  $('alphaSpeak').onclick = function () { if (alphaSpeakText) speak(alphaSpeakText); };
 
   /* ---------- CLOCK (tell the time) ---------- */
   let clockSpeakText = '';

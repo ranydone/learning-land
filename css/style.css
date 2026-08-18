@@ -111,6 +111,24 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .t-pizza{background:linear-gradient(135deg,#ff9f1c,#d62828)}
 .t-games{background:linear-gradient(135deg,#9b5de5,#f15bb5)}
 .games-tiles{max-width:620px; margin:18px auto 0}
+.t-atoz{background:linear-gradient(135deg,#00bbf9,#4361ee)}
+
+/* A to Z drag game */
+.alpha-grid{max-height:48vh; overflow-y:auto; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  align-content:flex-start; padding:12px 6px; max-width:640px; margin:12px auto 0; width:100%}
+.alpha-tile{font-family:inherit; border:none; border-radius:14px; background:#fff; box-shadow:0 4px 0 rgba(0,0,0,.1);
+  width:clamp(64px,19vw,86px); padding:6px 4px; display:flex; flex-direction:column; align-items:center; gap:1px;
+  cursor:grab; touch-action:none; user-select:none}
+.alpha-tile .al-letter{font-size:clamp(16px,4.5vw,20px); font-weight:800; color:var(--purple)}
+.alpha-tile .al-emoji{font-size:clamp(26px,7vw,34px); line-height:1}
+.alpha-tile .al-word{font-size:clamp(8px,2.4vw,11px); font-weight:700; color:var(--ink-soft)}
+.alpha-tile.dragging{cursor:grabbing; box-shadow:0 12px 22px rgba(120,80,180,.35); transform:scale(1.1); z-index:1000}
+.alpha-tile.wrong{animation:shake .4s ease; background:#ffe0e6}
+.alpha-tile.done{opacity:.32; box-shadow:none}
+.alpha-bar{display:flex; align-items:center; gap:14px; justify-content:center; background:#fff7fb; border-radius:22px;
+  padding:12px 18px; margin:12px auto 0; max-width:520px; width:100%; box-shadow:var(--shadow)}
+.alpha-target{font-size:clamp(34px,10vw,52px); font-weight:800; color:var(--orange); min-width:1.3em; text-align:center; line-height:1}
+.alpha-drop{font-weight:700; color:var(--ink-soft); font-size:clamp(13px,3.6vw,16px)}
 .t-daily{grid-column:1/-1}
 
 /* professional footer */
