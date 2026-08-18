@@ -326,21 +326,55 @@
     },
   };
 
+  /* ---- pattern library: many themes × many structures = 50+ pattern quizzes ---- */
+  const PATTERN_THEMES = [
+    ['🔴', '🔵'], ['🟡', '🟢'], ['🟠', '🟣'], ['⚫', '⚪'], ['🔴', '🔵', '🟡'], ['🟥', '🟦', '🟨', '🟩'],
+    ['⭐', '🌙'], ['⭐', '❤️'], ['🔺', '⬜'], ['🔷', '🔶'], ['⬛', '⬜'], ['🔺', '⬜', '🔵'], ['⭐', '🌙', '☀️'],
+    ['🍎', '🍌'], ['🍎', '🍏'], ['🍓', '🍊', '🍇'], ['🍉', '🍒', '🍑'], ['🍪', '🧁'], ['🍕', '🍔', '🌭'], ['🍩', '🍬'],
+    ['🐶', '🐱'], ['🐰', '🐻'], ['🐸', '🐵', '🐔'], ['🐙', '🐠', '🐳'], ['🐝', '🦋'], ['🐢', '🐰'],
+    ['🌞', '🌧️'], ['☀️', '☁️', '🌈'], ['⛄', '❄️'], ['🌸', '🌻'], ['🌳', '🌲', '🌴'], ['🍁', '🍂'],
+    ['🚗', '🚌'], ['🚂', '✈️', '🚀'], ['⛵', '🚁'], ['👆', '👇'], ['👍', '👎'], ['😀', '😢'], ['😺', '🐶'],
+    ['🎵', '🎶'], ['🔔', '🎈'], ['💧', '🔥'], ['🌟', '💫', '✨'], ['⚽', '🏀'], ['🎾', '🏐', '🏈'], ['❤️', '💛', '💚', '💙'],
+  ];
+  const STRUCTURES = [
+    [0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0], [0, 0, 1, 1], [0, 1, 1, 0], [1, 0, 0], // need 2 symbols
+    [0, 1, 2], [0, 1, 2, 1], [0, 0, 1, 2], [0, 1, 1, 2], [0, 1, 2, 2], // need 3
+    [0, 1, 2, 3], // need 4
+  ];
+  const ALL_PATTERN_EMOJIS = [...new Set(PATTERN_THEMES.flat())];
+  function usableStructures(themeLen) { return STRUCTURES.filter((s) => Math.max.apply(null, s) < themeLen); }
+
   /* ================= THINK & CODE (logic basics) ================= */
   const LOGIC = {
     pattern(R) {
-      const set = R.pick(C.patternSets);
-      const reps = R.int(2, 2 + LEVEL); // longer patterns for higher classes
+      const theme = R.pick(PATTERN_THEMES);
+      const unit = R.pick(usableStructures(theme.length));
+      const reps = R.int(2, 2 + LEVEL);           // longer patterns for higher classes
+      const partial = R.int(0, unit.length - 1);  // stop mid-unit so the answer varies
+      const seqLen = reps * unit.length + partial;
       const seq = [];
-      for (let i = 0; i < reps; i++) seq.push(...set);
-      const ans = set[seq.length % set.length];
-      const pool = [...new Set(C.patternSets.flat())].filter(e => e !== ans).map(e => ({ label: '', emoji: e }));
+      for (let i = 0; i < seqLen; i++) seq.push(theme[unit[i % unit.length]]);
+      const ans = theme[unit[seqLen % unit.length]];
+      const pool = ALL_PATTERN_EMOJIS.filter((e) => e !== ans).map((e) => ({ label: '', emoji: e }));
       return {
         module: 'logic',
-        prompt: `What comes NEXT in the pattern?`,
-        speak: `Look at the pattern. What comes next?`,
+        prompt: 'What comes NEXT in the pattern?',
+        speak: 'Look at the pattern. What comes next?',
         display: { kind: 'emojis', value: seq.join(' ') + '  ❓' },
         options: buildOptions(R, { label: '', emoji: ans }, pool),
+      };
+    },
+    growingPattern(R) { // counting / growing pattern (numbers get bigger)
+      const e = R.pick(['🔵', '⭐', '🍎', '🟩', '❤️', '🌸', '🐟', '🎈']);
+      const start = R.int(1, 3);
+      const ans = start + 3;
+      const grp = (n) => repeatEmoji(e, n);
+      return {
+        module: 'logic',
+        prompt: 'How many come NEXT?',
+        speak: 'The groups are growing bigger. How many come next?',
+        display: { kind: 'emojis', value: grp(start) + '  →  ' + grp(start + 1) + '  →  ' + grp(start + 2) + '  →  ❓' },
+        options: numberOptions(R, ans, 1, ans + 3),
       };
     },
     oddOneOut(R) {
@@ -438,13 +472,14 @@
     },
     // Pattern completion — the missing one is in the MIDDLE.
     whatIsMissing(R) {
-      const set = R.pick(C.patternSets);
+      const theme = R.pick(PATTERN_THEMES);
+      const unit = R.pick(usableStructures(theme.length));
       const seq = [];
-      for (let i = 0; i < 3; i++) seq.push(...set);
-      const hideIdx = R.int(set.length, seq.length - 2);
+      for (let i = 0; i < 3 * unit.length; i++) seq.push(theme[unit[i % unit.length]]);
+      const hideIdx = R.int(unit.length, seq.length - 2);
       const ans = seq[hideIdx];
       const shown = seq.map((e, i) => (i === hideIdx ? '❓' : e)).join(' ');
-      const pool = [...new Set(C.patternSets.flat())].filter((e) => e !== ans).map((e) => ({ label: '', emoji: e }));
+      const pool = ALL_PATTERN_EMOJIS.filter((e) => e !== ans).map((e) => ({ label: '', emoji: e }));
       return {
         module: 'logic',
         prompt: 'What is MISSING in the pattern?',
@@ -470,12 +505,11 @@
     },
     // Debugging — find the item that breaks the pattern.
     findMistake(R) {
-      const set = R.pick(C.patternSets.filter((s) => s.length === 2));
-      const a = set[0], b = set[1];
+      const theme = R.pick(PATTERN_THEMES.filter((s) => s.length >= 2));
+      const a = theme[0], b = theme[1];
       const seq = [a, b, a, b, a, b];
-      const allE = [...new Set(C.patternSets.flat())];
       let intruder; let g = 0;
-      do { intruder = R.pick(allE); } while ((intruder === a || intruder === b) && g++ < 30);
+      do { intruder = R.pick(ALL_PATTERN_EMOJIS); } while ((intruder === a || intruder === b) && g++ < 30);
       seq[R.int(2, 5)] = intruder;
       return {
         module: 'logic',
@@ -504,9 +538,11 @@
       };
     },
     all(R) {
-      const pool = [this.pattern, this.oddOneOut, this.sizeOrder, this.sequenceOrder, this.sorting,
-        this.direction, this.ifThen, this.whatIsMissing, this.sameDifferent, this.findMistake, this.compareSize];
-      if (LEVEL >= 2) pool.push(this.findMistake, this.whatIsMissing, this.ifThen); // more logic/debugging for higher levels
+      // Patterns are the heart of Think & Code — weight them heavily.
+      const pool = [this.pattern, this.pattern, this.pattern, this.whatIsMissing, this.whatIsMissing,
+        this.growingPattern, this.findMistake, this.oddOneOut, this.sizeOrder, this.sequenceOrder,
+        this.sorting, this.direction, this.ifThen, this.sameDifferent, this.compareSize];
+      if (LEVEL >= 2) pool.push(this.pattern, this.whatIsMissing, this.findMistake, this.growingPattern, this.ifThen);
       return R.pick(pool).call(this, R);
     },
   };
