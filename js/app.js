@@ -162,7 +162,8 @@
                 : t.dataset.alpha ? startAlphabet()
                 : t.dataset.game === 'calendar' ? startCalendar()
                   : t.dataset.game === 'clock' ? startClock()
-                    : startGame(t.dataset.game));
+                    : t.dataset.game === 'subtract' ? startSubtract()
+                      : startGame(t.dataset.game));
     });
   }
 
@@ -1004,6 +1005,143 @@
 
   $('clockHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('clockSpeak').onclick = function () { if (clockSpeakText) speak(clockSpeakText); };
+
+  /* ---------- TAKE AWAY (subtraction with tally lines) ---------- */
+  let subSpeakText = '';
+  function startSubtract() {
+    show('subtract');
+    const R = makeRNG('sub-' + Date.now() + '-' + Math.random());
+    const lvl = currentLevel();
+    const maxTop = lvl === 1 ? 9 : lvl === 2 ? 13 : 18;
+    // Build 5 problems: top − take, always leaving at least 1 behind.
+    const probs = [];
+    for (let i = 0; i < 5; i++) {
+      const top = R.int(3, maxTop);
+      const take = R.int(1, top - 1);
+      probs.push({ top: top, take: take });
+    }
+    let idx = 0, struck = 0, phase = 'strike';
+    const eq = $('subEq'), hint = $('subHint'), stage = $('subStage'),
+      ans = $('subAnswer'), feed = $('subFeedback'), title = $('subTitle');
+
+    function say(t) { subSpeakText = t; speak(t); }
+
+    function renderLines(p) {
+      stage.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.className = 'sub-lines';
+      for (let i = 0; i < p.top; i++) {
+        const b = document.createElement('button');
+        b.className = 'sub-line';
+        b.type = 'button';
+        b.setAttribute('aria-label', 'line');
+        b.innerHTML = '<span class="sub-stick"></span><span class="sub-cross">✗</span>';
+        b.onclick = function () { onStrike(b); };
+        wrap.appendChild(b);
+      }
+      stage.appendChild(wrap);
+    }
+
+    function ask() {
+      const p = probs[idx];
+      struck = 0; phase = 'strike';
+      title.textContent = '➖ Take Away (' + (idx + 1) + '/5)';
+      eq.innerHTML = '<span class="sub-top">' + p.top + '</span> − <span class="sub-take">' +
+        p.take + '</span> = <span class="sub-q">?</span>';
+      hint.textContent = 'Tap ' + p.take + ' line' + (p.take > 1 ? 's' : '') + ' to cross out ✗';
+      feed.className = 'feedback'; feed.textContent = '';
+      ans.innerHTML = '';
+      renderLines(p);
+      say('Let us take away. We have ' + p.top + '. Cross out ' + p.take +
+        ' line' + (p.take > 1 ? 's' : '') + ' by tapping them.');
+    }
+
+    function onStrike(b) {
+      if (phase !== 'strike' || b.classList.contains('struck')) return;
+      const p = probs[idx];
+      b.classList.add('struck');
+      struck++;
+      hint.textContent = 'Crossed out ' + struck + ' of ' + p.take;
+      say(String(struck));
+      if (struck >= p.take) {
+        phase = 'count';
+        setTimeout(showCount, 650);
+      }
+    }
+
+    function showCount() {
+      const p = probs[idx], answer = p.top - p.take;
+      // Gently highlight the lines that are still standing.
+      stage.querySelectorAll('.sub-line:not(.struck)').forEach(function (el) {
+        el.classList.add('left');
+      });
+      hint.textContent = 'Now count the lines left. How many? 🔢';
+      say('Now count the lines that are left. How many are still standing?');
+      // Build number options around the correct answer.
+      const opts = [answer];
+      let guard = 0;
+      while (opts.length < 4 && guard++ < 40) {
+        const d = answer + R.int(-2, 3);
+        if (d >= 0 && d <= p.top && opts.indexOf(d) === -1) opts.push(d);
+      }
+      let f = 0;
+      while (opts.length < 4 && f <= p.top) { if (opts.indexOf(f) === -1) opts.push(f); f++; }
+      const shuffled = R.sample(opts, opts.length);
+      ans.innerHTML = '';
+      shuffled.forEach(function (n) {
+        const btn = document.createElement('button');
+        btn.className = 'sub-opt';
+        btn.type = 'button';
+        btn.textContent = n;
+        btn.onclick = function () { onAnswer(n, answer, btn); };
+        ans.appendChild(btn);
+      });
+    }
+
+    function onAnswer(n, answer, btn) {
+      if (phase !== 'count') return;
+      const p = probs[idx];
+      if (n === answer) {
+        phase = 'done';
+        eq.querySelector('.sub-q').textContent = answer;
+        eq.querySelector('.sub-q').classList.add('sub-solved');
+        ans.querySelectorAll('.sub-opt').forEach(function (o) { o.disabled = true; });
+        btn.classList.add('right');
+        addStars(1); burst();
+        feed.className = 'feedback good';
+        feed.textContent = '🎉 Yes! ' + p.top + ' − ' + p.take + ' = ' + answer;
+        say('Well done! ' + p.top + ' take away ' + p.take + ' is ' + answer + '!');
+        idx++;
+        if (idx >= probs.length) setTimeout(finish, 1300);
+        else setTimeout(ask, 1300);
+      } else {
+        btn.classList.add('wrong');
+        feed.className = 'feedback try';
+        feed.textContent = 'Not quite — count the lines still standing 👆';
+        say('Not quite. Count the lines that are still standing.');
+      }
+    }
+
+    function finish() {
+      title.textContent = '🎉 Great job!';
+      eq.innerHTML = '⭐ You are a Take Away star! ⭐';
+      hint.textContent = '';
+      stage.innerHTML = '';
+      feed.className = 'feedback good'; feed.textContent = 'You crossed out and counted 5 problems!';
+      say('Amazing! You are a take away star!');
+      ans.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again seq-next';
+      btn.textContent = 'Play Again ▶️';
+      btn.onclick = startSubtract;
+      ans.appendChild(btn);
+    }
+
+    ask();
+  }
+
+  $('subHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  $('subSpeak').onclick = function () { if (subSpeakText) speak(subSpeakText); };
 
   /* ---------- confetti ---------- */
   const cv = $('confetti'); const ctx = cv.getContext('2d');

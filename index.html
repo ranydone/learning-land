@@ -46,7 +46,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=32" />
+  <link rel="stylesheet" href="css/style.css?v=33" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 </head>
@@ -128,6 +128,11 @@
         <span class="tile-emoji">➕</span>
         <span class="tile-name">Add Up</span>
         <span class="tile-sub">Counting & plus</span>
+      </button>
+      <button class="tile t-sub" data-game="subtract">
+        <span class="tile-emoji">➖</span>
+        <span class="tile-name">Take Away</span>
+        <span class="tile-sub">Cross out & count</span>
       </button>
       <button class="tile t-cal" data-game="calendar">
         <span class="tile-emoji">📅</span>
@@ -273,6 +278,20 @@
     <div id="clockFeedback" class="feedback"></div>
   </main>
 
+  <!-- TAKE AWAY (subtraction with tally lines) SCREEN -->
+  <main id="subtract" class="screen">
+    <header class="play-top">
+      <button id="subHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info" id="subTitle">➖ Take Away</div>
+      <button id="subSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <div id="subEq" class="sub-eq"></div>
+    <p id="subHint" class="sub-hint"></p>
+    <div id="subStage" class="sub-stage"></div>
+    <div id="subAnswer" class="sub-answer"></div>
+    <div id="subFeedback" class="feedback"></div>
+  </main>
+
   <!-- GAMES HUB SCREEN -->
   <main id="games" class="screen">
     <header class="play-top">
@@ -374,6 +393,6 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=23"></script>
   <script src="js/generators.js?v=32"></script>
-  <script src="js/app.js?v=30"></script>
+  <script src="js/app.js?v=31"></script>
 </body>
 </html>
