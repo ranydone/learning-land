@@ -160,6 +160,7 @@
             : t.dataset.games ? openGames()
               : t.dataset.pizza ? startPizza()
                 : t.dataset.alpha ? startAlphabet()
+                : t.dataset.web ? startWebHero()
                 : t.dataset.game === 'calendar' ? startCalendar()
                   : t.dataset.game === 'clock' ? startClock()
                     : t.dataset.game === 'subtract' ? startSubtract()
@@ -1142,6 +1143,184 @@
 
   $('subHome').onclick = function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('subSpeak').onclick = function () { if (subSpeakText) speak(subSpeakText); };
+
+  /* ---------- WEB HERO (spider hero swings to the right number) ---------- */
+  // "Webby" is our own little spider hero: a round red spider with a blue mask.
+  const WEBBY_SVG = '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+    '<g stroke="#2b2d42" stroke-width="5" stroke-linecap="round" fill="none">' +
+    '<path d="M30 50 Q16 38 8 46"/><path d="M27 58 Q10 54 4 62"/><path d="M28 66 Q12 70 8 80"/><path d="M33 74 Q24 84 22 94"/>' +
+    '<path d="M70 50 Q84 38 92 46"/><path d="M73 58 Q90 54 96 62"/><path d="M72 66 Q88 70 92 80"/><path d="M67 74 Q76 84 78 94"/>' +
+    '</g>' +
+    '<circle cx="50" cy="58" r="26" fill="#e63946"/>' +
+    '<circle cx="50" cy="70" r="9" fill="#ff6b6b"/>' +
+    '<ellipse cx="50" cy="50" rx="25" ry="11" fill="#1d4ed8"/>' +
+    '<ellipse cx="40" cy="50" rx="8" ry="9" fill="#fff"/><ellipse cx="60" cy="50" rx="8" ry="9" fill="#fff"/>' +
+    '<circle cx="41" cy="51" r="4" fill="#2b2d42"/><circle cx="61" cy="51" r="4" fill="#2b2d42"/>' +
+    '<path d="M42 64 Q50 71 58 64" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+    '</svg>';
+  let webSpeakText = '';
+  let webPlace = null; // re-seats the hero on its roof when the screen resizes
+  window.addEventListener('resize', function () { if (webPlace) webPlace(); });
+
+  function startWebHero() {
+    show('webhero');
+    const R = makeRNG('web-' + Date.now() + '-' + Math.random());
+    const lvl = currentLevel();
+    const ROUNDS = 6;
+    let idx = 0, phase = 'pick', cur = null, hero = null;
+    const title = $('webTitle'), qEl = $('webQ'), stage = $('webStage'),
+      feed = $('webFeedback'), ctrl = $('webControls');
+
+    function say(t) { webSpeakText = t; speak(t); }
+
+    // One question per swing; harder kinds unlock as the child's rank grows.
+    function makeQ() {
+      const kinds = lvl === 1 ? ['find', 'count', 'next']
+        : lvl === 2 ? ['find', 'count', 'next', 'add'] : ['find', 'next', 'add', 'sub'];
+      const kind = R.pick(kinds);
+      const maxN = lvl === 1 ? 10 : lvl === 2 ? 20 : 50;
+      if (kind === 'find') {
+        const n = R.int(1, maxN);
+        return { answer: n, html: 'Swing to number <b>' + n + '</b>!', speech: 'Swing to the building with number ' + n + '!' };
+      }
+      if (kind === 'count') {
+        const n = R.int(1, lvl === 1 ? 6 : 10);
+        return { answer: n, html: 'How many bugs? <span class="web-bugs">' + '🐞'.repeat(n) + '</span>', speech: 'Count the bugs. How many bugs are there?' };
+      }
+      if (kind === 'next') {
+        const n = R.int(1, maxN - 1);
+        return { answer: n + 1, html: 'What comes after <b>' + n + '</b>?', speech: 'What number comes after ' + n + '?' };
+      }
+      if (kind === 'add') {
+        const top = lvl === 2 ? 10 : 20;
+        const a = R.int(1, top - 1), b = R.int(1, top - a);
+        return { answer: a + b, html: '<b>' + a + ' + ' + b + ' = ?</b>', speech: a + ' plus ' + b + '. Swing to the answer!' };
+      }
+      const a = R.int(5, 20), b = R.int(1, a - 1);
+      return { answer: a - b, html: '<b>' + a + ' − ' + b + ' = ?</b>', speech: a + ' take away ' + b + '. Swing to the answer!' };
+    }
+
+    function choices(answer) {
+      const opts = [answer];
+      let guard = 0;
+      while (opts.length < 3 && guard++ < 60) {
+        const d = answer + R.int(-3, 3);
+        if (d >= 1 && opts.indexOf(d) === -1) opts.push(d);
+      }
+      return R.shuffle(opts);
+    }
+
+    // Put the hero on top of a building (or roof element).
+    function seat(el) {
+      const s = stage.getBoundingClientRect(), t = el.getBoundingClientRect();
+      hero.style.left = (t.left - s.left + t.width / 2 - hero.offsetWidth / 2) + 'px';
+      hero.style.top = (t.top - s.top - hero.offsetHeight + 8) + 'px';
+      hero.style.transform = '';
+    }
+
+    function ask() {
+      cur = makeQ(); phase = 'pick';
+      title.textContent = '🕷️ Web Hero (' + (idx + 1) + '/' + ROUNDS + ')';
+      qEl.innerHTML = cur.html;
+      feed.className = 'feedback'; feed.textContent = '';
+      ctrl.innerHTML = '';
+      stage.innerHTML = '<svg class="web-line" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0"/></svg>' +
+        '<span class="web-sun">☀️</span><span class="web-cloud c1">☁️</span><span class="web-cloud c2">☁️</span>';
+      const city = document.createElement('div');
+      city.className = 'web-city';
+      const home = document.createElement('div');
+      home.className = 'web-bld web-home';
+      city.appendChild(home);
+      const heights = R.shuffle([56, 68, 80]);
+      choices(cur.answer).forEach(function (n, i) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'web-bld web-pick c' + i;
+        b.style.height = heights[i] + '%';
+        b.setAttribute('aria-label', 'Building number ' + n);
+        b.innerHTML = '<span class="web-num">' + n + '</span>';
+        b.onclick = function () { onPick(b, n); };
+        city.appendChild(b);
+      });
+      stage.appendChild(city);
+      hero = document.createElement('div');
+      hero.className = 'web-hero';
+      hero.innerHTML = WEBBY_SVG;
+      stage.appendChild(hero);
+      seat(home);
+      webPlace = function () { if (phase === 'pick' && $('webhero').classList.contains('active')) seat(home); };
+      say(cur.speech);
+    }
+
+    function onPick(b, n) {
+      if (phase !== 'pick') return;
+      if (n !== cur.answer) {
+        b.classList.remove('web-wrong'); void b.offsetWidth; b.classList.add('web-wrong');
+        feed.className = 'feedback try';
+        feed.textContent = 'Oops! Try another building 👆';
+        say('Oops! Not that one. Try again.');
+        return;
+      }
+      phase = 'swing';
+      feed.className = 'feedback good';
+      feed.textContent = '🕸️ Thwip! Yes, ' + n + '!';
+      say('Thwip! Yes, ' + n + '!');
+      swingTo(b, function () {
+        b.classList.add('web-landed');
+        addStars(1); burst();
+        idx++;
+        setTimeout(idx >= ROUNDS ? finish : ask, 1100);
+      });
+    }
+
+    // Shoot a web to a point high above the gap, then swing down and up onto the roof.
+    function swingTo(b, done) {
+      const s = stage.getBoundingClientRect(), t = b.getBoundingClientRect();
+      const hw = hero.offsetWidth, hh = hero.offsetHeight;
+      const x0 = parseFloat(hero.style.left), y0 = parseFloat(hero.style.top);
+      const x1 = t.left - s.left + t.width / 2 - hw / 2, y1 = t.top - s.top - hh + 8;
+      const ax = (x0 + x1) / 2 + hw / 2, ay = 6;
+      const dip = Math.min(70, s.height * 0.18);
+      const line = stage.querySelector('.web-line line');
+      const lineSvg = stage.querySelector('.web-line');
+      lineSvg.classList.add('on');
+      const t0 = performance.now(), dur = 1000;
+      function frame(now) {
+        const raw = Math.min(1, (now - t0) / dur);
+        const p = raw < 0.5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
+        const x = x0 + (x1 - x0) * p;
+        const y = y0 + (y1 - y0) * p + Math.sin(Math.PI * p) * dip;
+        hero.style.left = x + 'px';
+        hero.style.top = y + 'px';
+        hero.style.transform = 'rotate(' + ((0.5 - p) * 40) + 'deg)';
+        line.setAttribute('x1', ax); line.setAttribute('y1', ay);
+        line.setAttribute('x2', x + hw / 2); line.setAttribute('y2', y + hh * 0.35);
+        if (raw < 1) requestAnimationFrame(frame);
+        else { hero.style.transform = ''; lineSvg.classList.remove('on'); done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function finish() {
+      webPlace = null;
+      title.textContent = '🎉 Great job!';
+      qEl.innerHTML = '⭐ You saved the kitty! ⭐';
+      stage.innerHTML = '<div class="web-win"><div class="web-hero big">' + WEBBY_SVG + '</div><span class="web-kitty">🐱</span></div>';
+      feed.className = 'feedback good'; feed.textContent = 'Webby swung across ' + ROUNDS + ' buildings with you!';
+      say('Hooray! You helped Webby save the kitty! You are a web hero!');
+      ctrl.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again seq-next';
+      btn.textContent = 'Play Again ▶️';
+      btn.onclick = startWebHero;
+      ctrl.appendChild(btn);
+    }
+
+    ask();
+  }
+
+  $('webHome').onclick = function () { webPlace = null; if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
+  $('webSpeak').onclick = function () { if (webSpeakText) speak(webSpeakText); };
 
   /* ---------- confetti ---------- */
   const cv = $('confetti'); const ctx = cv.getContext('2d');

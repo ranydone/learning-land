@@ -46,7 +46,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=33" />
+  <link rel="stylesheet" href="css/style.css?v=34" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 </head>
@@ -310,7 +310,25 @@
         <span class="tile-name">A to Z</span>
         <span class="tile-sub">Drag the letters</span>
       </button>
+      <button class="tile t-web" data-web="open">
+        <span class="tile-emoji">🕷️</span>
+        <span class="tile-name">Web Hero</span>
+        <span class="tile-sub">Swing to the number</span>
+      </button>
     </section>
+  </main>
+
+  <!-- WEB HERO (spider hero swings to the right number) SCREEN -->
+  <main id="webhero" class="screen">
+    <header class="play-top">
+      <button id="webHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info" id="webTitle">🕷️ Web Hero</div>
+      <button id="webSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <div id="webQ" class="web-q"></div>
+    <div id="webStage" class="web-stage"></div>
+    <div id="webFeedback" class="feedback"></div>
+    <div id="webControls" class="web-controls"></div>
   </main>
 
   <!-- A TO Z DRAG SCREEN -->
@@ -393,6 +411,6 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=23"></script>
   <script src="js/generators.js?v=32"></script>
-  <script src="js/app.js?v=31"></script>
+  <script src="js/app.js?v=32"></script>
 </body>
 </html>
