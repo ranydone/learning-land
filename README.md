@@ -23,6 +23,7 @@ tablet or computer.
 | 📖 **Story Time** | Listening, values, imagination | Read-aloud picture stories (Thirsty Crow, Tortoise & Hare, Lion & Mouse…) each ending in a gentle moral. A new story each day, plus a "New Story" button |
 | 🧩 **Memory Match** | Matching, focus, vocabulary | All cards stay face-up — tap two of the same picture to pair them; each picture's name is read aloud, so she learns words while she plays |
 | 🕷️ **Web Hero** (Games hub) | Number sense, counting, adding | Webby the spider hero swings between buildings — tap the building with the right number ("Swing to number 7!", "How many bugs?", "What comes after 4?", "3 + 2 = ?"). 6 swings, then Webby saves the kitty |
+| 🔷 **Shapes & Space** | Spatial reasoning (a strong predictor of later maths & science) | Three games: **Shape Builder** — drag squares, triangles, circles into a picture outline (house, rocket, castle…; higher ranks must turn pieces and skip a spare); **Which is Turned?** — find the same picture turned, not mirror-flipped; **Spot the Difference** — tap what changed between two scenes |
 | 🌅 **My Day** | Daily routines & good habits | Drag/tap picture tiles into the right order (Morning, Bedtime, Wash Hands, Get Ready for School, Plant a Seed, Eat an Apple) — sequencing everyday behaviour |
 
 ### Why "Think & Code" counts as coding for a 5-year-old

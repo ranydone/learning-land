@@ -115,6 +115,10 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 .games-tiles{width:100%; max-width:620px; margin:18px auto 0}
 .t-atoz{background:linear-gradient(135deg,#00bbf9,#4361ee)}
 .t-web{background:linear-gradient(135deg,#e63946,#1d4ed8)}
+.t-shapes{background:linear-gradient(135deg,#06d6a0,#4361ee)}
+.t-tangram{background:linear-gradient(135deg,#ff924c,#ff595e)}
+.t-turn{background:linear-gradient(135deg,#4cc9f0,#7209b7)}
+.t-spot{background:linear-gradient(135deg,#8ac926,#1982c4)}
 
 /* A to Z drag game */
 .alpha-grid{max-height:48vh; overflow-y:auto; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
@@ -397,3 +401,61 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
 @keyframes webbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
 .web-controls{display:flex;justify-content:center;margin:10px 0}
 @media (max-width:380px){ .web-hero{width:52px;height:52px} .web-num{min-width:46px;top:8px} }
+
+/* ---------- Shapes & Space (Shape Builder, Which is Turned?, Spot the Difference) ---------- */
+#tangram,#turn,#spot{align-items:center}
+.sh-hint{font-size:clamp(17px,4.6vw,24px);font-weight:800;color:#3a2e6b;text-align:center;margin:8px 0 10px;min-height:1.4em}
+.sh-controls{display:flex;justify-content:center;margin:10px 0}
+
+/* Shape Builder */
+.tg-board{position:relative;width:min(84vw,340px);aspect-ratio:1/1;border-radius:24px;background:#fff;box-shadow:var(--shadow);
+  background-image:radial-gradient(rgba(123,111,214,.14) 1.5px,transparent 1.5px);background-size:18px 18px}
+.tg-slot{position:absolute;transform-origin:50% 50%}
+.tg-slot svg,.tg-shape svg{width:100%;height:100%;display:block;overflow:visible}
+.tg-slot.filled{animation:tgpop .35s ease}
+.tg-slot.tg-glow{animation:tgglow 1s ease 2}
+@keyframes tgpop{0%{scale:.6}70%{scale:1.12}100%{scale:1}}
+@keyframes tgglow{0%,100%{filter:none}50%{filter:drop-shadow(0 0 10px #ffca3a) drop-shadow(0 0 4px #ff924c)}}
+.tg-done .tg-slot{animation:tgpop .5s ease}
+.tg-badge{position:absolute;right:6px;top:4px;font-size:46px;animation:tgpop .5s ease}
+.tg-tray{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;width:100%;max-width:560px;min-height:90px;
+  margin-top:16px;padding:14px;border-radius:20px;background:rgba(255,255,255,.6);box-shadow:var(--shadow)}
+.tg-piece{position:relative;flex:0 0 auto;cursor:grab;touch-action:none;user-select:none;min-width:34px;min-height:34px}
+.tg-piece .tg-shape{position:absolute;left:50%;top:50%;transition:transform .25s ease;pointer-events:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
+.tg-piece.dragging{position:fixed;z-index:1000;cursor:grabbing}
+.tg-piece.dragging .tg-shape{transition:none;filter:drop-shadow(0 10px 8px rgba(0,0,0,.25))}
+.tg-win{display:flex;align-items:center;justify-content:center;height:100%;font-size:clamp(48px,14vw,80px);gap:8px;flex-wrap:wrap;text-align:center}
+
+/* Which is Turned? */
+.turn-target{display:flex;justify-content:center;align-items:center;width:150px;height:150px;border-radius:28px;background:#fff;
+  box-shadow:var(--shadow);border:4px dashed #b8b0f0;margin:4px 0 18px}
+.turn-pic{display:inline-block;font-size:86px;line-height:1;transition:transform .3s}
+.turn-spin{animation:turnspin 2s linear infinite}
+@keyframes turnspin{to{transform:rotate(360deg)}}
+.turn-opts{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;width:100%;max-width:620px}
+.turn-opt{width:128px;height:128px;border:none;border-radius:24px;background:#fff;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.12);
+  display:flex;align-items:center;justify-content:center;transition:transform .1s}
+.turn-opt .turn-pic{font-size:66px}
+.turn-opt:active{transform:translateY(4px)}
+.turn-opt.right{background:#d8f8ea;outline:5px solid #06d6a0}
+.turn-opt.wrong{opacity:.45;outline:4px solid #e5383b}
+@media (max-width:420px){ .turn-opt{width:44vw;height:44vw;max-width:150px;max-height:150px} }
+
+/* Spot the Difference */
+.sp-scenes{display:flex;gap:10px;justify-content:center;width:100%;max-width:640px}
+.sp-scene{flex:1 1 0;max-width:300px;display:grid;grid-template-columns:repeat(var(--spCols),1fr);border-radius:18px;overflow:hidden;
+  box-shadow:var(--shadow);border:3px solid #fff}
+.sp-garden{background:linear-gradient(180deg,#d8f3dc,#b7e4c7)}
+.sp-ocean{background:linear-gradient(180deg,#caf0f8,#90e0ef)}
+.sp-kitchen{background:linear-gradient(180deg,#fff1e6,#fde2e4)}
+.sp-toys{background:linear-gradient(180deg,#f1e4ff,#e0d4fd)}
+.sp-cell{position:relative;aspect-ratio:1/1;border:none;background:transparent;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(20px,6vw,40px)}
+.sp-item{display:inline-block;line-height:1;pointer-events:none}
+.sp-cell.found::after{content:"";position:absolute;inset:6%;border:4px solid #e5383b;border-radius:50%;animation:tgpop .35s ease}
+.sp-scene.sp-nope{animation:webshake .4s ease}
+@media (max-width:560px){
+  .sp-scenes{flex-direction:column;align-items:center;gap:12px}
+  .sp-scene{flex:0 0 auto;width:min(86vw,300px)}
+  .sp-cell{font-size:clamp(26px,8.5vw,40px)}
+}

@@ -161,6 +161,10 @@
               : t.dataset.pizza ? startPizza()
                 : t.dataset.alpha ? startAlphabet()
                 : t.dataset.web ? startWebHero()
+                : t.dataset.shapes ? show('shapesHub')
+                : t.dataset.tangram ? startTangram()
+                : t.dataset.turn ? startTurn()
+                : t.dataset.spot ? startSpot()
                 : t.dataset.game === 'calendar' ? startCalendar()
                   : t.dataset.game === 'clock' ? startClock()
                     : t.dataset.game === 'subtract' ? startSubtract()
@@ -1321,6 +1325,422 @@
 
   $('webHome').onclick = function () { webPlace = null; if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); };
   $('webSpeak').onclick = function () { if (webSpeakText) speak(webSpeakText); };
+
+  /* ---------- SHAPES & SPACE (hub + three spatial-reasoning games) ---------- */
+  function goHomeFromShapes() { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); }
+  $('shapesHubHome').onclick = goHomeFromShapes;
+
+  // Draw one shape inside a 100x100 box (stretched to the element's size).
+  const SHAPE_NAMES = { sq: 'square', rect: 'rectangle', tri: 'triangle', circ: 'circle', semi: 'half circle' };
+  function shapeSVG(kind, fill, outline) {
+    const a = outline
+      ? 'fill="rgba(255,255,255,.55)" stroke="#7b6fd6" stroke-width="3" stroke-dasharray="7 5" vector-effect="non-scaling-stroke"'
+      : 'fill="' + fill + '" stroke="rgba(0,0,0,.18)" stroke-width="2" vector-effect="non-scaling-stroke"';
+    const body = kind === 'tri' ? '<polygon points="50,1 99,99 1,99" ' + a + '/>'
+      : kind === 'circ' ? '<ellipse cx="50" cy="50" rx="49" ry="49" ' + a + '/>'
+        : kind === 'semi' ? '<path d="M1 1 H99 A49 98 0 0 1 1 1 Z" ' + a + '/>'
+          : '<rect x="1" y="1" width="98" height="98" rx="4" ' + a + '/>';
+    return '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' + body + '</svg>';
+  }
+  // Is a piece turned to `a` the same as a slot turned to `b`? (squares/circles look the same any way up)
+  function sameTurn(kind, a, b) {
+    a = ((a % 360) + 360) % 360; b = ((b % 360) + 360) % 360;
+    if (kind === 'sq' || kind === 'circ') return true;
+    if (kind === 'rect') return a % 180 === b % 180;
+    return a === b;
+  }
+
+  /* --- Shape Builder: drag shapes into a picture outline (tap a shape to turn it) --- */
+  // Each piece: [kind, centreX, centreY, width, height, turn] in board units (0-100).
+  const TG_PICS = [
+    { name: 'house', emoji: '🏠', lvl: 1, pieces: [['tri', 50, 30, 64, 28, 0], ['sq', 50, 64, 40, 40, 0], ['rect', 72, 22, 8, 16, 0]] },
+    { name: 'ice cream', emoji: '🍦', lvl: 1, pieces: [['circ', 50, 12, 10, 10, 0], ['circ', 50, 34, 36, 36, 0], ['tri', 50, 70, 32, 36, 180]] },
+    { name: 'snowman', emoji: '⛄', lvl: 1, pieces: [['circ', 50, 76, 36, 36, 0], ['circ', 50, 45, 28, 28, 0], ['circ', 50, 21, 20, 20, 0]] },
+    { name: 'tree', emoji: '🌲', lvl: 1, pieces: [['tri', 50, 24, 40, 28, 0], ['tri', 50, 49, 58, 28, 0], ['rect', 50, 75, 12, 22, 0]] },
+    { name: 'boat', emoji: '⛵', lvl: 1, pieces: [['semi', 50, 76, 66, 18, 0], ['tri', 42, 44, 36, 40, 0], ['tri', 70, 50, 20, 28, 0]] },
+    { name: 'fish', emoji: '🐟', lvl: 1, pieces: [['circ', 42, 50, 44, 44, 0], ['tri', 76, 50, 26, 24, 270]] },
+    { name: 'rocket', emoji: '🚀', lvl: 1, pieces: [['tri', 50, 17, 26, 22, 0], ['rect', 50, 48, 26, 40, 0], ['tri', 30, 72, 14, 18, 0], ['tri', 70, 72, 14, 18, 0]] },
+    { name: 'car', emoji: '🚗', lvl: 1, pieces: [['rect', 50, 40, 34, 16, 0], ['rect', 50, 56, 72, 18, 0], ['circ', 30, 72, 16, 16, 0], ['circ', 70, 72, 16, 16, 0]] },
+    { name: 'robot', emoji: '🤖', lvl: 3, pieces: [['sq', 50, 22, 28, 28, 0], ['rect', 50, 55, 40, 34, 0], ['rect', 20, 54, 10, 26, 0], ['rect', 80, 54, 10, 26, 0], ['rect', 41, 82, 10, 18, 0], ['rect', 59, 82, 10, 18, 0]] },
+    { name: 'castle', emoji: '🏰', lvl: 3, pieces: [['sq', 50, 62, 40, 40, 0], ['rect', 20, 60, 16, 44, 0], ['rect', 80, 60, 16, 44, 0], ['tri', 20, 28, 20, 20, 0], ['tri', 80, 28, 20, 20, 0], ['semi', 50, 37, 24, 10, 180]] }
+  ];
+  function aAn(w) { return (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w; }
+  const TG_COLORS = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93', '#ff924c', '#4cc9f0'];
+  let tgSpeakText = '';
+  let tgResize = null;
+  window.addEventListener('resize', function () { if (tgResize) tgResize(); });
+
+  function startTangram() {
+    show('tangram');
+    const R = makeRNG('tg-' + Date.now() + '-' + Math.random());
+    const lvl = currentLevel();
+    const canTurn = lvl >= 2;
+    const pics = R.sample(TG_PICS.filter(function (p) { return p.lvl <= lvl; }), 3);
+    let idx = 0, slots = [], left = 0, busy = false;
+    const board = $('tgBoard'), tray = $('tgTray'), hint = $('tgHint'), feed = $('tgFeedback'),
+      ctrl = $('tgControls'), title = $('tgTitle'), screen = $('tangram');
+
+    function say(t) { tgSpeakText = t; speak(t); }
+    function sizeVar() { screen.style.setProperty('--tgB', board.clientWidth + 'px'); }
+    tgResize = function () { if (screen.classList.contains('active')) sizeVar(); };
+
+    function ask() {
+      const pic = pics[idx];
+      busy = false;
+      title.textContent = '🏠 Shape Builder (' + (idx + 1) + '/' + pics.length + ')';
+      hint.textContent = canTurn ? 'Drag each shape into its place. Tap a shape to turn it 🔄' : 'Drag each shape into its place!';
+      feed.className = 'feedback'; feed.textContent = '';
+      ctrl.innerHTML = '';
+      board.className = 'tg-board'; board.innerHTML = '';
+      tray.innerHTML = '';
+      slots = pic.pieces.map(function (p, i) {
+        const el = document.createElement('div');
+        el.className = 'tg-slot';
+        el.style.left = p[1] + '%'; el.style.top = p[2] + '%';
+        el.style.width = p[3] + '%'; el.style.height = p[4] + '%';
+        el.style.transform = 'translate(-50%,-50%) rotate(' + p[5] + 'deg)';
+        el.innerHTML = shapeSVG(p[0], null, true);
+        board.appendChild(el);
+        return { kind: p[0], cx: p[1], cy: p[2], w: p[3], h: p[4], turn: p[5], el: el, filled: false, color: TG_COLORS[i % TG_COLORS.length] };
+      });
+      left = slots.length;
+      sizeVar();
+      // Tray pieces: same sizes as the outline; at higher ranks they arrive turned.
+      const pieces = slots.map(function (s) { return { kind: s.kind, w: s.w, h: s.h, color: s.color, turn: s.turn }; });
+      if (lvl >= 3) {
+        const d = R.pick(slots); // one extra shape that does not belong
+        const side = Math.min(d.w, 30); // 30 matches no real circle or square in any picture
+        pieces.push({ kind: d.kind === 'circ' ? 'sq' : 'circ', w: side, h: side, color: '#adb5bd', turn: 0 });
+      }
+      R.shuffle(pieces).forEach(function (pc) {
+        if (canTurn && pc.kind !== 'sq' && pc.kind !== 'circ') pc.turn = R.pick([0, 90, 180, 270]);
+        tray.appendChild(makePiece(pc));
+      });
+      say('Let us build ' + aAn(pic.name) + '! Drag each shape into its place.' + (canTurn ? ' Tap a shape to turn it.' : ''));
+    }
+
+    function makePiece(pc) {
+      const wrap = document.createElement('div');
+      wrap.className = 'tg-piece';
+      const inner = document.createElement('div');
+      inner.className = 'tg-shape';
+      inner.innerHTML = shapeSVG(pc.kind, pc.color, false);
+      wrap.appendChild(inner);
+      function fit() {
+        const side = pc.turn % 180 === 0;
+        wrap.style.width = 'calc(var(--tgB) * ' + ((side ? pc.w : pc.h) / 100) + ')';
+        wrap.style.height = 'calc(var(--tgB) * ' + ((side ? pc.h : pc.w) / 100) + ')';
+        inner.style.width = 'calc(var(--tgB) * ' + (pc.w / 100) + ')';
+        inner.style.height = 'calc(var(--tgB) * ' + (pc.h / 100) + ')';
+        inner.style.transform = 'translate(-50%,-50%) rotate(' + pc.turn + 'deg)';
+      }
+      fit();
+      let down = false, moved = false, sx = 0, sy = 0;
+      wrap.addEventListener('pointerdown', function (e) {
+        if (busy) return;
+        down = true; moved = false; sx = e.clientX; sy = e.clientY;
+        try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
+      });
+      wrap.addEventListener('pointermove', function (e) {
+        if (!down) return;
+        if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 8) return;
+        if (!moved) { moved = true; wrap.classList.add('dragging'); }
+        wrap.style.left = (e.clientX - wrap.offsetWidth / 2) + 'px';
+        wrap.style.top = (e.clientY - wrap.offsetHeight / 2) + 'px';
+      });
+      function end(e) {
+        if (!down) return; down = false;
+        if (!moved) { onTap(pc, wrap, fit); return; }
+        wrap.classList.remove('dragging'); wrap.style.left = ''; wrap.style.top = '';
+        if (e.type === 'pointerup') onDrop(pc, wrap, e.clientX, e.clientY);
+      }
+      wrap.addEventListener('pointerup', end);
+      wrap.addEventListener('pointercancel', end);
+      return wrap;
+    }
+
+    function onTap(pc, wrap, fit) {
+      if (canTurn && pc.kind !== 'sq' && pc.kind !== 'circ') {
+        pc.turn = (pc.turn + 90) % 360; fit();
+        say('Turn!');
+        return;
+      }
+      // Starter level: show where this shape could go.
+      const match = slots.filter(function (s) { return !s.filled && s.kind === pc.kind && s.w === pc.w && s.h === pc.h; });
+      match.forEach(function (s) { s.el.classList.remove('tg-glow'); void s.el.offsetWidth; s.el.classList.add('tg-glow'); });
+      say(match.length ? 'A ' + SHAPE_NAMES[pc.kind] + '! Drag it to the glowing spot.' : 'This ' + SHAPE_NAMES[pc.kind] + ' does not belong in the picture.');
+    }
+
+    function onDrop(pc, wrap, x, y) {
+      const r = board.getBoundingClientRect();
+      const bx = (x - r.left) / r.width * 100, by = (y - r.top) / r.height * 100;
+      const onBoard = bx > -10 && bx < 110 && by > -10 && by < 110;
+      let best = null, bestD = 1e9;
+      slots.forEach(function (s) {
+        if (s.filled || s.kind !== pc.kind || s.w !== pc.w || s.h !== pc.h) return;
+        const d = Math.hypot(s.cx - bx, s.cy - by);
+        if (d < bestD) { bestD = d; best = s; }
+      });
+      if (best && bestD <= 24) {
+        if (!sameTurn(pc.kind, pc.turn, best.turn)) {
+          feed.className = 'feedback try';
+          feed.textContent = '🔄 Right shape! Tap it to turn it, then try again';
+          say('Right shape! Tap it to turn it around, then try again.');
+          return;
+        }
+        best.filled = true;
+        best.el.classList.add('filled');
+        best.el.innerHTML = shapeSVG(best.kind, pc.color, false);
+        wrap.remove();
+        left--;
+        feed.className = 'feedback good'; feed.textContent = '✨ ' + SHAPE_NAMES[pc.kind] + '!';
+        say(SHAPE_NAMES[pc.kind] + '!');
+        if (left === 0) done();
+      } else if (onBoard) {
+        feed.className = 'feedback try';
+        feed.textContent = 'Hmm, that shape does not fit there 🤔';
+        say('Hmm, that shape does not fit there. Look for the same shape and size.');
+      }
+    }
+
+    function done() {
+      const pic = pics[idx];
+      busy = true;
+      Array.prototype.forEach.call(tray.children, function (c) { c.remove(); });
+      board.classList.add('tg-done');
+      const badge = document.createElement('div');
+      badge.className = 'tg-badge';
+      badge.textContent = pic.emoji;
+      board.appendChild(badge);
+      feed.className = 'feedback good'; feed.textContent = '🎉 You built ' + aAn(pic.name) + '!';
+      say('Wow! You built ' + aAn(pic.name) + '!');
+      addStars(1); burst();
+      idx++;
+      setTimeout(idx >= pics.length ? finish : ask, 2000);
+    }
+
+    function finish() {
+      title.textContent = '🎉 Great job!';
+      hint.textContent = '⭐ You are a Shape Builder! ⭐';
+      board.innerHTML = '<div class="tg-win">' + pics.map(function (p) { return p.emoji; }).join(' ') + '</div>';
+      feed.className = 'feedback good'; feed.textContent = 'You built ' + pics.length + ' pictures with shapes!';
+      say('Amazing! You built ' + pics.length + ' pictures with shapes!');
+      ctrl.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again seq-next';
+      btn.textContent = 'Play Again ▶️';
+      btn.onclick = startTangram;
+      ctrl.appendChild(btn);
+    }
+
+    ask();
+  }
+  $('tgHome').onclick = function () { tgResize = null; goHomeFromShapes(); };
+  $('tgSpeak').onclick = function () { if (tgSpeakText) speak(tgSpeakText); };
+
+  /* --- Which is Turned?: find the same picture turned, not flipped like a mirror --- */
+  // Pictures that clearly face one way, so a mirror flip looks different.
+  const TURN_PICS = ['🦒', '🐘', '🦕', '🦖', '🐌', '🦆', '🐿️', '🐎', '🐓', '🦜', '🐢', '🚲', '🛴', '👢', '🎺', '🐇', '🐈', '🐕', '🦩', '🐪'];
+  let turnSpeakText = '';
+
+  function startTurn() {
+    show('turn');
+    const R = makeRNG('turn-' + Date.now() + '-' + Math.random());
+    const lvl = currentLevel();
+    const ROUNDS = 6;
+    let idx = 0, locked = false;
+    const hint = $('turnHint'), target = $('turnTarget'), opts = $('turnOpts'),
+      feed = $('turnFeedback'), ctrl = $('turnControls'), title = $('turnTitle');
+
+    function say(t) { turnSpeakText = t; speak(t); }
+
+    function ask() {
+      locked = false;
+      const pic = R.pick(TURN_PICS);
+      const angles = lvl >= 3 ? [45, 90, 135, 180, 225, 270, 315] : [90, 180, 270];
+      const others = TURN_PICS.filter(function (p) { return p !== pic; });
+      // Starter: the twin vs other pictures. Higher ranks: the twin vs mirror-flipped copies.
+      const choices = [{ pic: pic, turn: R.pick(angles), flip: false, ok: true }];
+      if (lvl === 1) {
+        R.sample(others, 2).forEach(function (o) { choices.push({ pic: o, turn: R.pick(angles), flip: false, ok: false }); });
+      } else {
+        const mirrors = lvl >= 3 ? 2 : 1;
+        for (let i = 0; i < mirrors; i++) choices.push({ pic: pic, turn: R.pick([0].concat(angles)), flip: true, ok: false });
+        choices.push({ pic: R.pick(others), turn: R.pick(angles), flip: false, ok: false });
+      }
+      title.textContent = '🔄 Which is Turned? (' + (idx + 1) + '/' + ROUNDS + ')';
+      hint.textContent = lvl === 1 ? 'Find the same picture, just turned around!' : 'Find the one that is turned — not flipped like a mirror 🪞';
+      feed.className = 'feedback'; feed.textContent = '';
+      ctrl.innerHTML = '';
+      target.innerHTML = '<span class="turn-pic">' + pic + '</span>';
+      opts.innerHTML = '';
+      R.shuffle(choices).forEach(function (c) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'turn-opt';
+        b.innerHTML = '<span class="turn-pic" style="transform:rotate(' + c.turn + 'deg)' + (c.flip ? ' scaleX(-1)' : '') + '">' + c.pic + '</span>';
+        b.onclick = function () { onPick(c, b); };
+        opts.appendChild(b);
+      });
+      say(lvl === 1 ? 'Which one is the same picture, just turned around?'
+        : 'Which one is the same picture, just turned? Watch out for the mirror flip!');
+    }
+
+    function onPick(c, b) {
+      if (locked) return;
+      if (c.ok) {
+        locked = true;
+        b.classList.add('right');
+        feed.className = 'feedback good'; feed.textContent = '🎉 Yes! It is just turned!';
+        say('Yes! That one is just turned around!');
+        addStars(1); burst();
+        idx++;
+        setTimeout(idx >= ROUNDS ? finish : ask, 1400);
+        return;
+      }
+      b.classList.add('wrong');
+      b.disabled = true;
+      feed.className = 'feedback try';
+      if (c.flip) {
+        feed.textContent = '🪞 That one is flipped like a mirror. Try again!';
+        say('That one is flipped, like in a mirror. Try again!');
+      } else {
+        feed.textContent = 'That is a different picture. Try again!';
+        say('That is a different picture. Try again!');
+      }
+    }
+
+    function finish() {
+      title.textContent = '🎉 Great job!';
+      hint.textContent = '⭐ Super spinning brain! ⭐';
+      target.innerHTML = '<span class="turn-pic turn-spin">🌀</span>';
+      opts.innerHTML = '';
+      feed.className = 'feedback good'; feed.textContent = 'You found ' + ROUNDS + ' turned pictures!';
+      say('Amazing! You have a super spinning brain!');
+      ctrl.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again seq-next';
+      btn.textContent = 'Play Again ▶️';
+      btn.onclick = startTurn;
+      ctrl.appendChild(btn);
+    }
+
+    ask();
+  }
+  $('turnHome').onclick = goHomeFromShapes;
+  $('turnSpeak').onclick = function () { if (turnSpeakText) speak(turnSpeakText); };
+
+  /* --- Spot the Difference: two scenes, tap what changed --- */
+  const SPOT_THEMES = [
+    { name: 'garden', bg: 'sp-garden', items: ['🌸', '🌻', '🌷', '🐝', '🦋', '🐞', '🍄', '🐛', '🐌', '🌳', '🐦', '🌼'] },
+    { name: 'ocean', bg: 'sp-ocean', items: ['🐟', '🐠', '🐙', '🦀', '🐚', '🐬', '🐳', '🦑', '🐡', '⭐', '🦈', '🐢'] },
+    { name: 'kitchen', bg: 'sp-kitchen', items: ['🍎', '🍌', '🍇', '🍓', '🥕', '🧀', '🍪', '🥛', '🍞', '🥚', '🍉', '🍒'] },
+    { name: 'toy box', bg: 'sp-toys', items: ['🧸', '⚽', '🎈', '🎨', '🧩', '🎲', '🚗', '🥁', '🎺', '🏀', '🚀', '🎁'] }
+  ];
+  let spotSpeakText = '';
+
+  function startSpot() {
+    show('spot');
+    const R = makeRNG('spot-' + Date.now() + '-' + Math.random());
+    const lvl = currentLevel();
+    const cols = lvl === 1 ? 3 : 4, rows = lvl >= 3 ? 4 : 3, nDiff = lvl === 1 ? 2 : lvl === 2 ? 3 : 4;
+    const themes = R.sample(SPOT_THEMES, 3);
+    let idx = 0, found = 0, diffs = [], locked = false;
+    const hint = $('spotHint'), scenes = $('spotScenes'), feed = $('spotFeedback'),
+      ctrl = $('spotControls'), title = $('spotTitle');
+
+    function say(t) { spotSpeakText = t; speak(t); }
+    function progress() {
+      let dots = '';
+      for (let i = 0; i < nDiff; i++) dots += i < found ? '🔴' : '⚪';
+      hint.textContent = 'Find ' + nDiff + ' differences: ' + dots;
+    }
+
+    function ask() {
+      const th = themes[idx];
+      locked = false; found = 0;
+      title.textContent = '🔍 Spot the Difference (' + (idx + 1) + '/' + themes.length + ')';
+      feed.className = 'feedback'; feed.textContent = '';
+      ctrl.innerHTML = '';
+      // Left picture: every cell gets an item, nudged a little so it looks natural.
+      const cells = [];
+      for (let i = 0; i < cols * rows; i++) {
+        cells.push({ e: R.pick(th.items), dx: R.int(-12, 12), dy: R.int(-12, 12), s: 0.85 + R.next() * 0.3 });
+      }
+      // Right picture: a copy with a few changes.
+      const kinds = lvl >= 2 ? ['swap', 'gone', 'big'] : ['swap', 'gone'];
+      diffs = R.sample(cells.map(function (_, i) { return i; }), nDiff);
+      const right = cells.map(function (c) { return { e: c.e, dx: c.dx, dy: c.dy, s: c.s }; });
+      diffs.forEach(function (i, k) {
+        const kind = k === 0 ? 'swap' : R.pick(kinds);
+        if (kind === 'swap') right[i].e = R.pick(th.items.filter(function (x) { return x !== cells[i].e; }));
+        else if (kind === 'gone') right[i].e = '';
+        else right[i].s = cells[i].s * 1.6;
+      });
+      scenes.innerHTML = '';
+      scenes.style.setProperty('--spCols', cols);
+      [cells, right].forEach(function (list) {
+        const sc = document.createElement('div');
+        sc.className = 'sp-scene ' + th.bg;
+        list.forEach(function (c, i) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'sp-cell';
+          b.dataset.i = i;
+          b.innerHTML = '<span class="sp-item" style="transform:translate(' + c.dx + '%,' + c.dy + '%) scale(' + c.s + ')">' + c.e + '</span>';
+          b.onclick = function () { onTap(i, sc); };
+          sc.appendChild(b);
+        });
+        scenes.appendChild(sc);
+      });
+      progress();
+      say('Look at the two ' + th.name + ' pictures. Find ' + nDiff + ' things that are different!');
+    }
+
+    function onTap(i, sc) {
+      if (locked) return;
+      if (diffs.indexOf(i) === -1) {
+        sc.classList.remove('sp-nope'); void sc.offsetWidth; sc.classList.add('sp-nope');
+        feed.className = 'feedback try'; feed.textContent = 'Those look the same. Look closely 👀';
+        say('Those look the same. Look closely!');
+        return;
+      }
+      const cellsAt = scenes.querySelectorAll('.sp-cell[data-i="' + i + '"]');
+      if (cellsAt[0].classList.contains('found')) return;
+      cellsAt.forEach(function (c) { c.classList.add('found'); });
+      found++;
+      progress();
+      if (found >= nDiff) {
+        locked = true;
+        feed.className = 'feedback good'; feed.textContent = '🎉 You found them all!';
+        say('Wow! You found all the differences!');
+        addStars(1); burst();
+        idx++;
+        setTimeout(idx >= themes.length ? finish : ask, 1600);
+      } else {
+        feed.className = 'feedback good'; feed.textContent = '⭕ You found one!';
+        say('You found one! ' + (nDiff - found) + ' more to go.');
+      }
+    }
+
+    function finish() {
+      title.textContent = '🎉 Great job!';
+      hint.textContent = '⭐ Super sharp eyes! ⭐';
+      scenes.innerHTML = '<div class="tg-win">🔍👀✨</div>';
+      feed.className = 'feedback good'; feed.textContent = 'You spotted every difference in ' + themes.length + ' pictures!';
+      say('Amazing! You have super sharp eyes!');
+      ctrl.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.className = 'big-btn play-again seq-next';
+      btn.textContent = 'Play Again ▶️';
+      btn.onclick = startSpot;
+      ctrl.appendChild(btn);
+    }
+
+    ask();
+  }
+  $('spotHome').onclick = goHomeFromShapes;
+  $('spotSpeak').onclick = function () { if (spotSpeakText) speak(spotSpeakText); };
 
   /* ---------- confetti ---------- */
   const cv = $('confetti'); const ctx = cv.getContext('2d');

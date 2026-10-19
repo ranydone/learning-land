@@ -46,7 +46,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=34" />
+  <link rel="stylesheet" href="css/style.css?v=35" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 </head>
@@ -178,6 +178,11 @@
         <span class="tile-emoji">🎮</span>
         <span class="tile-name">Games</span>
         <span class="tile-sub">Fun mini games</span>
+      </button>
+      <button class="tile t-shapes" data-shapes="open">
+        <span class="tile-emoji">🔷</span>
+        <span class="tile-name">Shapes & Space</span>
+        <span class="tile-sub">Build, turn & spot</span>
       </button>
     </section>
 
@@ -331,6 +336,73 @@
     <div id="webControls" class="web-controls"></div>
   </main>
 
+  <!-- SHAPES & SPACE HUB SCREEN -->
+  <main id="shapesHub" class="screen">
+    <header class="play-top">
+      <button id="shapesHubHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info">🔷 Shapes & Space</div>
+      <span style="width:54px"></span>
+    </header>
+    <section class="tiles games-tiles">
+      <button class="tile t-tangram" data-tangram="open">
+        <span class="tile-emoji">🏠</span>
+        <span class="tile-name">Shape Builder</span>
+        <span class="tile-sub">Fit the shapes</span>
+      </button>
+      <button class="tile t-turn" data-turn="open">
+        <span class="tile-emoji">🔄</span>
+        <span class="tile-name">Which is Turned?</span>
+        <span class="tile-sub">Spin it in your head</span>
+      </button>
+      <button class="tile t-spot" data-spot="open">
+        <span class="tile-emoji">🔍</span>
+        <span class="tile-name">Spot the Difference</span>
+        <span class="tile-sub">Look closely!</span>
+      </button>
+    </section>
+  </main>
+
+  <!-- SHAPE BUILDER (drag shapes into a picture outline) SCREEN -->
+  <main id="tangram" class="screen">
+    <header class="play-top">
+      <button id="tgHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info" id="tgTitle">🏠 Shape Builder</div>
+      <button id="tgSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <p id="tgHint" class="sh-hint"></p>
+    <div id="tgBoard" class="tg-board"></div>
+    <div id="tgTray" class="tg-tray"></div>
+    <div id="tgFeedback" class="feedback"></div>
+    <div id="tgControls" class="sh-controls"></div>
+  </main>
+
+  <!-- WHICH IS TURNED? (mental rotation) SCREEN -->
+  <main id="turn" class="screen">
+    <header class="play-top">
+      <button id="turnHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info" id="turnTitle">🔄 Which is Turned?</div>
+      <button id="turnSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <p id="turnHint" class="sh-hint"></p>
+    <div id="turnTarget" class="turn-target"></div>
+    <div id="turnOpts" class="turn-opts"></div>
+    <div id="turnFeedback" class="feedback"></div>
+    <div id="turnControls" class="sh-controls"></div>
+  </main>
+
+  <!-- SPOT THE DIFFERENCE SCREEN -->
+  <main id="spot" class="screen">
+    <header class="play-top">
+      <button id="spotHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info" id="spotTitle">🔍 Spot the Difference</div>
+      <button id="spotSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <p id="spotHint" class="sh-hint"></p>
+    <div id="spotScenes" class="sp-scenes"></div>
+    <div id="spotFeedback" class="feedback"></div>
+    <div id="spotControls" class="sh-controls"></div>
+  </main>
+
   <!-- A TO Z DRAG SCREEN -->
   <main id="alphabet" class="screen">
     <header class="play-top">
@@ -411,6 +483,6 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=23"></script>
   <script src="js/generators.js?v=32"></script>
-  <script src="js/app.js?v=32"></script>
+  <script src="js/app.js?v=33"></script>
 </body>
 </html>
