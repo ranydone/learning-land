@@ -165,6 +165,8 @@
                 : t.dataset.tangram ? startTangram()
                 : t.dataset.turn ? startTurn()
                 : t.dataset.spot ? startSpot()
+                : t.dataset.puzzles ? show('puzzleHub')
+                : t.dataset.pz ? window.PUZZLES.start(t.dataset.pz)
                 : t.dataset.game === 'calendar' ? startCalendar()
                   : t.dataset.game === 'clock' ? startClock()
                     : t.dataset.game === 'subtract' ? startSubtract()
@@ -2269,6 +2271,12 @@
   }
 
   /* ---------- go ---------- */
+  // Shared helpers for games that live in their own files (js/puzzles.js).
+  window.POGO = {
+    speak: speak, addStars: addStars, burst: burst, show: show, currentLevel: currentLevel,
+    goHome: function () { if ('speechSynthesis' in window) speechSynthesis.cancel(); initHome(); show('home'); }
+  };
+
   setupSoundDock();
   initHome();
   initFirebase();

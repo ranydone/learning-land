@@ -46,7 +46,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=35" />
+  <link rel="stylesheet" href="css/style.css?v=36" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 </head>
@@ -183,6 +183,11 @@
         <span class="tile-emoji">🔷</span>
         <span class="tile-name">Shapes & Space</span>
         <span class="tile-sub">Build, turn & spot</span>
+      </button>
+      <button class="tile t-puzzles" data-puzzles="open">
+        <span class="tile-emoji">🧩</span>
+        <span class="tile-name">Puzzles</span>
+        <span class="tile-sub">10 picture puzzles</span>
       </button>
     </section>
 
@@ -362,6 +367,41 @@
     </section>
   </main>
 
+  <!-- PUZZLES HUB SCREEN -->
+  <main id="puzzleHub" class="screen">
+    <header class="play-top">
+      <button id="pzHubHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info">🧩 Puzzles</div>
+      <span style="width:54px"></span>
+    </header>
+    <section class="tiles games-tiles pz-tiles">
+      <button class="tile t-pz1" data-pz="jigsaw"><span class="tile-emoji">🧩</span><span class="tile-name">Jigsaw</span><span class="tile-sub">Fit the pieces</span></button>
+      <button class="tile t-pz2" data-pz="grid"><span class="tile-emoji">🔲</span><span class="tile-name">Picture Grid</span><span class="tile-sub">Square pieces</span></button>
+      <button class="tile t-pz3" data-pz="spin"><span class="tile-emoji">🔄</span><span class="tile-name">Spin Tiles</span><span class="tile-sub">Turn them upright</span></button>
+      <button class="tile t-pz4" data-pz="swap"><span class="tile-emoji">🔀</span><span class="tile-name">Swap Tiles</span><span class="tile-sub">Tap two to swap</span></button>
+      <button class="tile t-pz5" data-pz="slide"><span class="tile-emoji">🎚️</span><span class="tile-name">Slide Puzzle</span><span class="tile-sub">Slide into the gap</span></button>
+      <button class="tile t-pz6" data-pz="strips"><span class="tile-emoji">📏</span><span class="tile-name">Picture Strips</span><span class="tile-sub">Put them in order</span></button>
+      <button class="tile t-pz7" data-pz="missing"><span class="tile-emoji">🕳️</span><span class="tile-name">Missing Piece</span><span class="tile-sub">Which one fits?</span></button>
+      <button class="tile t-pz8" data-pz="shadow"><span class="tile-emoji">🌑</span><span class="tile-name">Shadow Match</span><span class="tile-sub">Find the shadow</span></button>
+      <button class="tile t-pz9" data-pz="blocks"><span class="tile-emoji">🟦</span><span class="tile-name">Block Fit</span><span class="tile-sub">Fill the space</span></button>
+      <button class="tile t-pz10" data-pz="copy"><span class="tile-emoji">🎨</span><span class="tile-name">Copy the Pattern</span><span class="tile-sub">Look & copy</span></button>
+    </section>
+  </main>
+
+  <!-- PUZZLE SCREEN (shared by all 10 puzzle games) -->
+  <main id="puzzle" class="screen">
+    <header class="play-top">
+      <button id="pzHome" class="round-btn" title="Back to puzzles">🧩</button>
+      <div class="mem-info" id="pzTitle">🧩 Puzzle</div>
+      <button id="pzSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <p id="pzHint" class="sh-hint"></p>
+    <div id="pzStage" class="pz-stage"></div>
+    <div id="pzTray" class="pz-tray"></div>
+    <div id="pzFeedback" class="feedback"></div>
+    <div id="pzControls" class="sh-controls"></div>
+  </main>
+
   <!-- SHAPE BUILDER (drag shapes into a picture outline) SCREEN -->
   <main id="tangram" class="screen">
     <header class="play-top">
@@ -483,6 +523,7 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=23"></script>
   <script src="js/generators.js?v=32"></script>
-  <script src="js/app.js?v=33"></script>
+  <script src="js/app.js?v=34"></script>
+  <script src="js/puzzles.js?v=1"></script>
 </body>
 </html>

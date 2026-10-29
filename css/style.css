@@ -459,3 +459,83 @@ select.entry-select{font-family:inherit; font-weight:800; color:var(--ink); appe
   .sp-scene{flex:0 0 auto;width:min(86vw,300px)}
   .sp-cell{font-size:clamp(26px,8.5vw,40px)}
 }
+
+/* ---------- Puzzles (10 picture & shape puzzles, js/puzzles.js) ---------- */
+.t-puzzles{background:linear-gradient(135deg,#f15bb5,#fee440)}
+.t-pz1{background:linear-gradient(135deg,#ff595e,#ff924c)}
+.t-pz2{background:linear-gradient(135deg,#1982c4,#4cc9f0)}
+.t-pz3{background:linear-gradient(135deg,#6a4c93,#b5179e)}
+.t-pz4{background:linear-gradient(135deg,#ff924c,#ffca3a)}
+.t-pz5{background:linear-gradient(135deg,#118ab2,#06d6a0)}
+.t-pz6{background:linear-gradient(135deg,#8ac926,#52b788)}
+.t-pz7{background:linear-gradient(135deg,#2b2d42,#5e60ce)}
+.t-pz8{background:linear-gradient(135deg,#495057,#9d4edd)}
+.t-pz9{background:linear-gradient(135deg,#4361ee,#4cc9f0)}
+.t-pz10{background:linear-gradient(135deg,#f15bb5,#9b5de5)}
+#puzzle{align-items:center}
+.pz-stage{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.pz-board{position:relative;width:min(84vw,340px);aspect-ratio:1/1;border-radius:14px;background:#fff;box-shadow:var(--shadow)}
+.pz-board>svg{width:100%;height:100%;display:block;border-radius:14px}
+.pz-board.pz-solved{box-shadow:0 0 0 6px #06d6a0,var(--shadow)}
+.pz-guide{position:absolute;inset:0;border-radius:14px;overflow:hidden}
+.pz-guide svg,.pz-tile svg,.pz-piece svg,.pz-placed svg,.pz-opt svg,.pz-thumb svg{width:100%;height:100%;display:block}
+.pz-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pz-lines line{stroke:#7b6fd6;stroke-width:1.5;stroke-dasharray:5 4;vector-effect:non-scaling-stroke}
+.pz-solved .pz-lines{display:none}
+.pz-tray{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;width:100%;max-width:620px;margin-top:14px;padding:12px;
+  border-radius:20px;background:rgba(255,255,255,.6);box-shadow:var(--shadow)}
+.pz-tray:empty{display:none}
+.pz-piece{position:relative;flex:0 0 auto;width:calc(var(--pzB) * var(--w) * .62);height:calc(var(--pzB) * var(--h) * .62);
+  margin:calc(var(--pzB) * var(--m) * -.3);touch-action:none;user-select:none;cursor:grab;filter:drop-shadow(0 3px 2px rgba(0,0,0,.25))}
+.pz-piece.pz-sq{box-shadow:0 0 0 2px #fff}
+.pz-piece.pz-drag{position:fixed;z-index:1000;margin:0;width:calc(var(--pzB) * var(--w));height:calc(var(--pzB) * var(--h));cursor:grabbing;
+  filter:drop-shadow(0 10px 8px rgba(0,0,0,.3))}
+.pz-placed{position:absolute;margin:0;cursor:default;filter:none;box-shadow:none}
+.pz-pop{animation:tgpop .4s ease}
+.pz-flash{position:absolute;border:4px solid #ffca3a;border-radius:8px;pointer-events:none;animation:tgglow 1s ease 1;box-shadow:0 0 14px #ffca3a}
+.pz-tile{position:absolute;padding:0;border:none;background:none;cursor:pointer;overflow:hidden;outline:1px solid rgba(255,255,255,.8);outline-offset:-1px;
+  transition:left .25s ease,top .25s ease}
+.pz-spin{width:100%;height:100%;transition:transform .3s ease}
+.pz-swap.sel{outline:4px solid #ffca3a;outline-offset:-4px;z-index:2}
+.pz-ok{position:absolute;right:3px;top:2px;font-size:14px;display:none}
+.pz-swap.ok .pz-ok{display:block}
+.pz-num{position:absolute;left:4px;top:3px;background:rgba(255,255,255,.88);border-radius:8px;padding:0 6px;font-weight:900;font-size:14px;color:#2b2d42}
+.pz-solved .pz-ok,.pz-solved .pz-num{display:none}
+.pz-solved .pz-tile{outline:none}
+.pz-slideb{background:#2b2d42}
+.pz-last{animation:tgpop .4s ease}
+.pz-thumb{display:flex;align-items:center;gap:10px;font-weight:800;color:#3a2e6b}
+.pz-thumb svg{width:84px;height:84px;border-radius:10px;box-shadow:var(--shadow)}
+.pz-opt{flex:0 0 auto;box-sizing:content-box;width:calc(var(--pzB) * var(--w) * .66);height:calc(var(--pzB) * var(--h) * .66);padding:6px;border:none;
+  border-radius:16px;background:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.12)}
+.pz-opt:active{transform:translateY(3px)}
+.pz-opt.wrong{opacity:.35;outline:3px solid #e5383b}
+.pz-shadows{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:560px;padding:14px;border-radius:20px;background:#fff;box-shadow:var(--shadow)}
+.pz-shadow{width:96px;height:96px;border-radius:18px;background:#eef1f6;display:flex;align-items:center;justify-content:center;font-size:60px;border:3px dashed #c9c3ef}
+.pz-shadow span{filter:brightness(0);opacity:.72;transition:filter .3s,opacity .3s}
+.pz-shadow.done{background:#d8f8ea;border-style:solid;border-color:#06d6a0}
+.pz-shadow.done span{filter:none;opacity:1;animation:tgpop .4s ease}
+.pz-shadow.pz-glow{animation:tgglow 1s ease 2}
+.pz-emo{width:84px;height:84px;display:flex;align-items:center;justify-content:center;font-size:58px;background:#fff;border-radius:18px;
+  box-shadow:0 5px 0 rgba(0,0,0,.12);touch-action:none;user-select:none;cursor:grab}
+.pz-emo.pz-drag{position:fixed;z-index:1000;cursor:grabbing}
+.pz-blkboard{display:grid;padding:6px;border-radius:14px;background:#fff;box-shadow:var(--shadow)}
+.pz-bcell{width:var(--pzCell);height:var(--pzCell);box-sizing:border-box;border:2px dashed #b8b0f0;background:#f6f4ff;border-radius:6px}
+.pz-bcell.off{visibility:hidden}
+.pz-bcell.on{border:2px solid rgba(0,0,0,.18);cursor:pointer}
+.pz-blk{display:grid;flex:0 0 auto;touch-action:none;user-select:none;cursor:grab}
+.pz-blk span{width:var(--pzCell);height:var(--pzCell);box-sizing:border-box;border:2px solid rgba(0,0,0,.18);border-radius:6px}
+.pz-blk span.no{visibility:hidden}
+.pz-blk.pz-drag{position:fixed;z-index:1000;cursor:grabbing;filter:drop-shadow(0 8px 6px rgba(0,0,0,.25))}
+.pz-example{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+.pz-label{font-weight:800;color:#6c63c7;font-size:15px}
+.pz-cgrid{display:grid;gap:5px;padding:7px;border-radius:14px;background:#fff;box-shadow:var(--shadow)}
+.pz-cgrid.small{width:min(40vw,150px)}
+.pz-cgrid.big{width:min(76vw,280px)}
+.pz-ccell{aspect-ratio:1/1;padding:0;border:2px solid #e3e0f5;border-radius:8px;background:#f6f4ff}
+button.pz-ccell{cursor:pointer}
+.pz-cover{position:absolute;left:0;right:0;bottom:0;top:22px;display:none;align-items:center;justify-content:center;font-size:48px;background:#e9e6ff;border-radius:14px}
+.pz-cover.on{display:flex}
+.pz-swatch{width:58px;height:58px;border-radius:50%;border:4px solid #fff;box-shadow:0 4px 0 rgba(0,0,0,.15);cursor:pointer;font-size:26px;padding:0}
+.pz-swatch.sel{outline:4px solid #3a2e6b;transform:scale(1.1)}
+.pz-peek{background:#fff}
