@@ -79,7 +79,7 @@
     if (!pool.length) pool = lvl === 3 ? list : [list[0]];
     const pick = R.pick(pool), word = pick[0], inside = word.charAt(0) !== L;
     const head = inside ? L + ' is in ' + nice(word) : L + ' is for ' + nice(word);
-    let next = 0, finished = false;
+    let next = 0, finished = false, misses = 0;
 
     $('spTitle').textContent = '✏️ ' + (lvl < 3 ? head : 'Letter ' + L); // top level: do not show the word
     $('spPic').textContent = pick[1];
@@ -115,8 +115,20 @@
       return t;
     });
 
+    // Show clearly which letter to find next. Starter: name it and point at the tile.
+    // Growing: name it (point after one miss). Champion: only the position (point after two misses).
     function mark() {
       boxes.forEach(function (b, i) { b.classList.toggle('next', i === next && !finished); });
+      tiles.forEach(function (x) { x.classList.remove('point'); });
+      const nextEl = $('spNext');
+      if (finished) { nextEl.innerHTML = ''; return; }
+      const need = word[next];
+      if (lvl < 3 || misses >= 2) nextEl.innerHTML = 'Find 👉 <b>' + need + '</b>';
+      else nextEl.innerHTML = next === 0 ? 'Which letter comes first? 🤔' : 'Letter <b>' + (next + 1) + '</b> of ' + word.length + ' — which comes next? 🤔';
+      if (lvl === 1 || (lvl === 2 && misses >= 1) || misses >= 2) {
+        const t = tiles.filter(function (x) { return !x.disabled && x.dataset.ch === need; })[0];
+        if (t) t.classList.add('point');
+      }
     }
 
     function tryTile(t) {
@@ -127,14 +139,17 @@
         b.innerHTML = '<span class="sp-in">' + ch + '</span>';
         b.classList.add('filled');
         t.disabled = true; t.classList.add('used');
-        next++;
+        next++; misses = 0;
         if (next === word.length) { complete(); return; }
         mark();
         feed.className = 'feedback good';
         feed.textContent = '✓ ' + word.slice(0, next).split('').join(' - ');
-        P().speak(ch);
+        if (lvl < 3) say(ch + '! Now find ' + word[next] + '.');
+        else P().speak(ch);
       } else {
         t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake');
+        misses++;
+        mark();
         feed.className = 'feedback try';
         if (lvl < 3) {
           feed.textContent = 'That is ' + ch + '. We need ' + word[next] + '!';
@@ -226,7 +241,7 @@
 
     mark();
     if (lvl === 1) say(head + '! Let us spell ' + nice(word) + ': ' + spelled(word) + '. Find ' + word[0] + ' first!');
-    else if (lvl === 2) say(head + '! Spell ' + nice(word) + '. Which letter comes first?');
+    else if (lvl === 2) say(head + '! Spell ' + nice(word) + '. Find ' + word[0] + ' first!');
     else say('Spell the word ' + nice(word) + '! ' + nice(word) + '.');
   }
 

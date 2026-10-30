@@ -579,3 +579,13 @@ button.pz-ccell{cursor:pointer}
 .sp-again{background:linear-gradient(135deg,#9b5de5,#f15bb5);margin-left:10px}
 .sp-hint{font-size:28px}
 #spControls{flex-wrap:wrap;gap:10px}
+/* Spell It: "Find 👉 P" banner and the pointing tile */
+.sp-next{margin-top:16px;padding:6px 22px;border-radius:999px;background:#fff8e1;border:3px solid #ffb703;
+  font-size:clamp(20px,5.6vw,28px);font-weight:800;color:#3a2e6b;text-align:center}
+.sp-next b{color:#e85d04;font-size:1.45em;line-height:1}
+.sp-next:empty{display:none}
+.sp-tiles{row-gap:34px}
+.sp-tile{position:relative}
+.sp-tile.point{animation:sppoint 1s ease-in-out infinite;box-shadow:0 0 0 5px #ffb703,0 5px 0 rgba(0,0,0,.18);z-index:1}
+.sp-tile.point::after{content:"👆";position:absolute;left:50%;bottom:-32px;transform:translateX(-50%);font-size:26px;pointer-events:none}
+@keyframes sppoint{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
