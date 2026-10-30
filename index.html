@@ -46,7 +46,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=36" />
+  <link rel="stylesheet" href="css/style.css?v=37" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 </head>
@@ -188,6 +188,11 @@
         <span class="tile-emoji">🧩</span>
         <span class="tile-name">Puzzles</span>
         <span class="tile-sub">10 picture puzzles</span>
+      </button>
+      <button class="tile t-spell" data-spell="open">
+        <span class="tile-emoji">✏️</span>
+        <span class="tile-name">Spell It</span>
+        <span class="tile-sub">A is for Apple</span>
       </button>
     </section>
 
@@ -367,6 +372,35 @@
     </section>
   </main>
 
+  <!-- SPELL IT: A-Z BOARD SCREEN -->
+  <main id="spellHub" class="screen">
+    <header class="play-top">
+      <button id="spHubHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info">✏️ Spell It · A to Z</div>
+      <span style="width:54px"></span>
+    </header>
+    <div class="sp-start"><button id="spPlayAll" class="big-btn play-again">▶️ Start at A</button></div>
+    <p id="spHubNote" class="sh-hint">Tap a letter to spell its word!</p>
+    <section id="spBoard" class="sp-board"></section>
+  </main>
+
+  <!-- SPELL IT: SPELL ONE WORD SCREEN -->
+  <main id="spell" class="screen">
+    <header class="play-top">
+      <button id="spBack" class="round-btn" title="Back to A to Z">🔤</button>
+      <div class="mem-info" id="spTitle">✏️ Spell It</div>
+      <button id="spSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <div class="sp-card">
+      <div id="spPic" class="sp-pic"></div>
+      <div id="spWord" class="sp-word"></div>
+    </div>
+    <div id="spBoxes" class="sp-boxes"></div>
+    <div id="spTiles" class="sp-tiles"></div>
+    <div id="spFeedback" class="feedback"></div>
+    <div id="spControls" class="sh-controls"></div>
+  </main>
+
   <!-- PUZZLES HUB SCREEN -->
   <main id="puzzleHub" class="screen">
     <header class="play-top">
@@ -523,7 +557,8 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=23"></script>
   <script src="js/generators.js?v=32"></script>
-  <script src="js/app.js?v=34"></script>
+  <script src="js/app.js?v=35"></script>
   <script src="js/puzzles.js?v=1"></script>
+  <script src="js/spell.js?v=1"></script>
 </body>
 </html>

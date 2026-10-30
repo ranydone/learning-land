@@ -539,3 +539,43 @@ button.pz-ccell{cursor:pointer}
 .pz-swatch{width:58px;height:58px;border-radius:50%;border:4px solid #fff;box-shadow:0 4px 0 rgba(0,0,0,.15);cursor:pointer;font-size:26px;padding:0}
 .pz-swatch.sel{outline:4px solid #3a2e6b;transform:scale(1.1)}
 .pz-peek{background:#fff}
+
+/* ---------- Spell It (A-Z picture words, js/spell.js) ---------- */
+.t-spell{background:linear-gradient(135deg,#ff6b6b,#4361ee)}
+#spellHub,#spell{align-items:center}
+.sp-start{display:flex;justify-content:center;margin-top:12px}
+.sp-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px;width:100%;max-width:640px;margin-top:6px}
+.sp-letter{position:relative;aspect-ratio:1/1;border:none;border-radius:18px;background:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.1);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;font-family:inherit}
+.sp-letter:active{transform:translateY(3px)}
+.sp-letter .sp-big{font-size:30px;font-weight:900;color:#4361ee;line-height:1}
+.sp-letter .sp-emo{font-size:24px;line-height:1}
+.sp-letter.done{background:#e6fbf2}
+.sp-letter.done .sp-big{color:#06a35a}
+.sp-star{position:absolute;top:3px;right:5px;font-size:14px}
+.sp-card{display:flex;flex-direction:column;align-items:center;background:#fff;border-radius:26px;box-shadow:var(--shadow);padding:10px 34px 8px;margin:6px 0 14px}
+.sp-pic{font-size:clamp(80px,22vw,120px);line-height:1.1}
+.sp-word{font-size:clamp(26px,7vw,36px);font-weight:900;color:#3a2e6b;letter-spacing:2px}
+.sp-boxes{display:flex;gap:8px;justify-content:center;flex-wrap:nowrap;width:100%;
+  --sz:min(60px,calc((94vw - (var(--n) - 1) * 8px) / var(--n)))}
+.sp-box{width:var(--sz);height:calc(var(--sz) * 1.15);border-radius:14px;background:#fff;border:3px dashed #b8b0f0;display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--sz) * .62);font-weight:900;color:#3a2e6b;box-sizing:border-box}
+.sp-box.next{border:3px solid #ffb703;animation:spnext 1.1s ease-in-out infinite}
+.sp-box.filled{border:3px solid #4361ee;background:#eef2ff}
+.sp-box.win{border-color:#06d6a0;background:#d8f8ea;color:#047857}
+.sp-ghost{color:#cfc9f2}
+.sp-in{animation:tgpop .3s ease}
+@keyframes spnext{0%,100%{box-shadow:0 0 0 0 rgba(255,183,3,.5)}50%{box-shadow:0 0 0 7px rgba(255,183,3,0)}}
+.sp-tiles{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;width:100%;max-width:560px;margin-top:22px}
+.sp-tile{width:62px;height:62px;border:none;border-radius:16px;font-family:inherit;font-size:32px;font-weight:900;color:#fff;cursor:grab;
+  background:linear-gradient(135deg,#ff924c,#ff595e);box-shadow:0 5px 0 rgba(0,0,0,.18);touch-action:none;user-select:none}
+.sp-tile:nth-child(3n+2){background:linear-gradient(135deg,#4cc9f0,#4361ee)}
+.sp-tile:nth-child(3n+3){background:linear-gradient(135deg,#8ac926,#06a35a)}
+.sp-tile:active{transform:translateY(3px)}
+.sp-tile.used{visibility:hidden}
+.sp-tile.drag{position:fixed;z-index:1000;cursor:grabbing;transform:scale(1.12)}
+.sp-tile.shake{animation:webshake .45s ease}
+.sp-tile.glow{animation:tgglow 1s ease 2}
+.sp-again{background:linear-gradient(135deg,#9b5de5,#f15bb5);margin-left:10px}
+.sp-hint{font-size:28px}
+#spControls{flex-wrap:wrap;gap:10px}
