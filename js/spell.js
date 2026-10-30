@@ -1,6 +1,7 @@
 /* Spell It: an A-Z board of picture words. Pick a letter, see "A is for Apple 🍎",
    then put the word's letters into the boxes in order (tap or drag the tiles).
-   Starter: faint letters show in the boxes. Growing: no hints, plus extra letters.
+   Every level names (and says) the next letter: "First, find A", "Now find R".
+   Starter: faint letters in the boxes and the right tile points. Growing: extra letters.
    Champion: longer words, the written word is hidden, extra letters, and a 💡 hint. */
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -44,7 +45,13 @@
   function spelled(w) { return w.split('').join(', '); }
 
   let speakText = '';
-  function say(t) { speakText = t; P().speak(t); }
+  // Speak a moment later: some browsers drop speech that starts right after a cancel.
+  let sayTimer = null;
+  function say(t) {
+    speakText = t;
+    clearTimeout(sayTimer);
+    sayTimer = setTimeout(function () { P().speak(t); }, 120);
+  }
 
   /* ---------- A-Z board ---------- */
   function open() {
@@ -115,17 +122,16 @@
       return t;
     });
 
-    // Show clearly which letter to find next. Starter: name it and point at the tile.
-    // Growing: name it (point after one miss). Champion: only the position (point after two misses).
+    // Always show (and say) which letter to find next. Starter also points at the tile;
+    // higher levels point only after a wrong try.
     function mark() {
       boxes.forEach(function (b, i) { b.classList.toggle('next', i === next && !finished); });
       tiles.forEach(function (x) { x.classList.remove('point'); });
       const nextEl = $('spNext');
       if (finished) { nextEl.innerHTML = ''; return; }
       const need = word[next];
-      if (lvl < 3 || misses >= 2) nextEl.innerHTML = 'Find 👉 <b>' + need + '</b>';
-      else nextEl.innerHTML = next === 0 ? 'Which letter comes first? 🤔' : 'Letter <b>' + (next + 1) + '</b> of ' + word.length + ' — which comes next? 🤔';
-      if (lvl === 1 || (lvl === 2 && misses >= 1) || misses >= 2) {
+      nextEl.innerHTML = (next === 0 ? 'First, find 👉 <b>' : need === word[next - 1] ? 'Another 👉 <b>' : 'Now find 👉 <b>') + need + '</b>';
+      if (lvl === 1 || misses >= 1) {
         const t = tiles.filter(function (x) { return !x.disabled && x.dataset.ch === need; })[0];
         if (t) t.classList.add('point');
       }
@@ -144,20 +150,14 @@
         mark();
         feed.className = 'feedback good';
         feed.textContent = '✓ ' + word.slice(0, next).split('').join(' - ');
-        if (lvl < 3) say(ch + '! Now find ' + word[next] + '.');
-        else P().speak(ch);
+        say(ch + '! Now find ' + (word[next] === ch ? 'another ' : '') + word[next] + '.');
       } else {
         t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake');
         misses++;
         mark();
         feed.className = 'feedback try';
-        if (lvl < 3) {
-          feed.textContent = 'That is ' + ch + '. We need ' + word[next] + '!';
-          say('That is ' + ch + '. We need ' + word[next] + '.');
-        } else {
-          feed.textContent = 'That is ' + ch + '. Try another letter! 💡';
-          say('That is ' + ch + '. Say ' + word.toLowerCase() + ' slowly, and try another letter.');
-        }
+        feed.textContent = 'That is ' + ch + '. We need ' + word[next] + '!';
+        say('That is ' + ch + '. We need ' + word[next] + '.');
       }
     }
 
@@ -242,7 +242,7 @@
     mark();
     if (lvl === 1) say(head + '! Let us spell ' + nice(word) + ': ' + spelled(word) + '. Find ' + word[0] + ' first!');
     else if (lvl === 2) say(head + '! Spell ' + nice(word) + '. Find ' + word[0] + ' first!');
-    else say('Spell the word ' + nice(word) + '! ' + nice(word) + '.');
+    else say('Spell the word ' + nice(word) + '! Find ' + word[0] + ' first!');
   }
 
   $('spHubHome').onclick = function () { P().goHome(); };
