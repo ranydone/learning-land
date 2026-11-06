@@ -66,6 +66,70 @@
       [['🌙', 60, 50, 52], ['⭐', 150, 40, 22], ['⭐', 240, 72, 22], ['🌲', 40, 188, 80], ['🌲', 260, 178, 90], ['🦉', 150, 140, 60], ['🦊', 110, 255, 56], ['🍄', 220, 266, 40]])
   ];
 
+  // 20 more pictures for Spin Tiles. Each has a clear "up" (sky above, ground below) and
+  // things spread over the whole picture, so every tile shows which way it is turned.
+  function stripes(y, h, w, a, b) {
+    let s = '';
+    for (let x = 0, k = 0; x < 300; x += w, k++) s += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + (k % 2 ? b : a) + '"/>';
+    return s;
+  }
+  function rain() {
+    let s = '';
+    for (let i = 0; i < 26; i++) {
+      const x = (i * 47) % 300, y = 80 + (i * 61) % 140;
+      s += '<line x1="' + x + '" y1="' + y + '" x2="' + (x - 6) + '" y2="' + (y + 16) + '" stroke="#4895ef" stroke-width="3" stroke-linecap="round"/>';
+    }
+    return s;
+  }
+  const SPIN_PICS = [
+    scene('pond', 'frog pond', '#a8dadc', '#f1faee', '<rect y="150" width="300" height="150" fill="#95d5b2"/><ellipse cx="150" cy="218" rx="128" ry="58" fill="#48cae4"/><ellipse cx="150" cy="222" rx="96" ry="38" fill="#0096c7" opacity=".45"/>',
+      [['☀️', 255, 40, 46], ['☁️', 70, 45, 46], ['🦋', 160, 92, 34], ['🌾', 28, 150, 48], ['🌾', 274, 158, 44], ['🐸', 105, 222, 46], ['🦆', 200, 198, 42], ['🐟', 196, 248, 28], ['🐢', 58, 272, 32], ['🌸', 252, 272, 30]]),
+    scene('market', 'fruit market', '#fff1e6', '#ffe5ec', stripes(18, 52, 30, '#e63946', '#ffffff') + '<rect y="210" width="300" height="90" fill="#bc6c25"/><rect y="204" width="300" height="10" fill="#dda15e"/>',
+      [['🏷️', 150, 112, 30], ['🍎', 50, 168, 46], ['🍌', 120, 165, 48], ['🍇', 190, 170, 46], ['🍉', 255, 165, 52], ['🍓', 55, 248, 38], ['🍍', 130, 244, 50], ['🍒', 200, 252, 36], ['🧺', 262, 254, 44]]),
+    scene('train', 'train ride', '#bde0fe', '#e0fbfc', '<path d="M0 175 Q75 125 150 175 T300 175 V300 H0Z" fill="#90be6d"/><rect y="238" width="300" height="6" fill="#6c584c"/>' + stripes(244, 6, 15, '#6c584c', 'transparent'),
+      [['☁️', 60, 45, 44], ['☁️', 210, 62, 36], ['☀️', 266, 34, 40], ['🐦', 140, 70, 26], ['🌳', 262, 172, 50], ['🚂', 70, 220, 52], ['🚃', 135, 220, 52], ['🚃', 200, 220, 52], ['🐄', 42, 280, 36], ['🌻', 150, 282, 32], ['🌻', 250, 280, 32]]),
+    scene('castle', 'fairy castle', '#cdb4db', '#ffc8dd', '<path d="M0 232 Q150 210 300 232 V300 H0Z" fill="#80b918"/>',
+      [['👑', 150, 34, 34], ['✨', 55, 58, 30], ['🐉', 252, 88, 52], ['☁️', 92, 108, 40], ['🏰', 150, 168, 108], ['🌳', 28, 188, 52], ['🦄', 58, 248, 50], ['🍄', 150, 274, 30], ['🌸', 248, 272, 32]]),
+    scene('pirate', 'pirate sea', '#90e0ef', '#caf0f8', '<rect y="150" width="300" height="150" fill="#0077b6"/><ellipse cx="250" cy="152" rx="52" ry="14" fill="#ffd166"/>' +
+      '<rect x="96" y="40" width="4" height="72" fill="#5c4033"/><rect x="100" y="40" width="46" height="30" fill="#212529"/>' + txt('☠️', 123, 55, 22),
+      [['🦜', 40, 60, 40], ['☀️', 262, 36, 40], ['⛵', 112, 138, 70], ['🏝️', 250, 124, 54], ['🐠', 150, 204, 30], ['🦈', 66, 218, 46], ['⚓', 268, 216, 34], ['💰', 60, 276, 34], ['🐙', 200, 256, 46]]),
+    scene('school', 'classroom', '#fefae0', '#faedcd', '<rect x="30" y="28" width="200" height="104" rx="6" fill="#2d6a4f" stroke="#8d6e63" stroke-width="6"/>' +
+      '<text x="130" y="82" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle" dominant-baseline="central">ABC 123</text>' +
+      '<rect y="232" width="300" height="68" fill="#d4a373"/><rect x="50" y="196" width="200" height="16" rx="4" fill="#bc6c25"/>',
+      [['🕐', 266, 62, 36], ['📚', 72, 172, 40], ['🍎', 132, 178, 30], ['✏️', 182, 178, 30], ['🌍', 232, 172, 36], ['🎒', 42, 264, 44], ['🖍️', 150, 266, 30], ['🧮', 252, 264, 40]]),
+    scene('kitchen', 'kitchen', '#ffe8d6', '#ffd7ba', '<rect x="188" y="28" width="84" height="72" fill="#a2d2ff" stroke="#fff" stroke-width="6"/><line x1="230" y1="28" x2="230" y2="100" stroke="#fff" stroke-width="5"/>' +
+      '<rect x="20" y="96" width="140" height="6" fill="#9c6644"/><rect y="200" width="300" height="100" fill="#b08968"/><rect y="194" width="300" height="10" fill="#ddb892"/>',
+      [['🕰️', 60, 68, 40], ['🧂', 130, 76, 30], ['☀️', 210, 58, 30], ['🍳', 60, 176, 44], ['🥞', 130, 176, 40], ['🧁', 200, 178, 36], ['🥛', 262, 176, 40], ['🍪', 50, 258, 36], ['🥕', 122, 260, 36], ['🍲', 192, 260, 40], ['☕', 258, 260, 36]]),
+    scene('bedroom', 'bedtime', '#22223b', '#4a4e69', '<rect x="30" y="28" width="100" height="92" fill="#14213d" stroke="#f2e9e4" stroke-width="6"/><rect y="230" width="300" height="70" fill="#9a8c98"/><ellipse cx="150" cy="270" rx="110" ry="20" fill="#c9ada7"/>',
+      [['🌙', 80, 70, 44], ['⭐', 180, 40, 22], ['⭐', 262, 72, 20], ['💤', 232, 136, 30], ['🧸', 58, 208, 50], ['🛏️', 192, 200, 90], ['📖', 128, 270, 34], ['🧦', 250, 272, 30]]),
+    scene('arctic', 'icy north', '#caf0f8', '#ade8f4', '<rect y="160" width="300" height="50" fill="#48cae4"/><path d="M0 205 Q150 185 300 210 V300 H0Z" fill="#f8f9fa"/><ellipse cx="205" cy="258" rx="58" ry="18" fill="#0096c7"/>',
+      [['❄️', 200, 40, 28], ['☁️', 140, 62, 40], ['❄️', 272, 92, 24], ['🏔️', 66, 120, 90], ['🐋', 252, 176, 44], ['🦭', 160, 212, 48], ['🐧', 48, 240, 46], ['🐧', 100, 268, 38], ['🐟', 205, 258, 24]]),
+    scene('desert', 'desert', '#ffb703', '#ffe8a3', '<path d="M0 205 Q80 160 160 205 T300 192 V300 H0Z" fill="#e9c46a"/><path d="M0 250 Q100 225 200 250 T300 245 V300 H0Z" fill="#d4a24c"/>',
+      [['🦅', 70, 60, 38], ['☀️', 250, 46, 56], ['🌴', 215, 162, 50], ['🐪', 112, 190, 80], ['🌵', 38, 200, 60], ['🌵', 262, 222, 50], ['🦂', 60, 276, 30], ['🐍', 170, 272, 34], ['🏺', 242, 280, 34]]),
+    scene('autumn', 'autumn park', '#ffe5d9', '#fec89a', '<rect x="40" y="80" width="24" height="150" fill="#6f4518"/><circle cx="52" cy="80" r="55" fill="#f77f00"/><path d="M0 230 Q150 210 300 232 V300 H0Z" fill="#bc6c25"/>',
+      [['🍁', 200, 50, 36], ['🍂', 250, 110, 34], ['🍁', 150, 122, 28], ['🍂', 274, 196, 30], ['🐿️', 122, 218, 52], ['🦔', 210, 250, 44], ['🎃', 60, 265, 46], ['🌰', 160, 276, 26], ['🍄', 270, 272, 34]]),
+    scene('circus', 'circus', '#ffafcc', '#ffc8dd', '<path d="M56 232 L150 72 L244 232Z" fill="#e63946"/><path d="M150 72 L118 232 L182 232Z" fill="#fff"/><rect y="232" width="300" height="68" fill="#ffd166"/>',
+      [['⭐', 150, 46, 26], ['🎈', 40, 60, 46], ['🎈', 260, 70, 46], ['🎉', 258, 156, 36], ['🤡', 150, 196, 44], ['🐘', 54, 240, 54], ['🦁', 250, 248, 50], ['🍿', 150, 276, 32]]),
+    scene('safari', 'safari', '#ffd166', '#fcefb4', '<rect y="182" width="300" height="118" fill="#a7c957"/><rect x="225" y="92" width="10" height="100" fill="#7f5539"/><ellipse cx="230" cy="92" rx="56" ry="16" fill="#386641"/>',
+      [['☀️', 55, 45, 50], ['🦅', 150, 50, 30], ['🚙', 140, 164, 34], ['🦒', 70, 160, 80], ['🦓', 165, 218, 62], ['🦩', 266, 202, 40], ['🦛', 70, 266, 46], ['🐊', 232, 276, 42]]),
+    scene('soil', 'under the ground', '#bde0fe', '#bde0fe', '<rect y="112" width="300" height="188" fill="#7f5539"/><rect y="104" width="300" height="12" fill="#80b918"/>' +
+      '<path d="M20 150 Q90 200 160 150 T290 220" stroke="#9c6644" stroke-width="14" fill="none" stroke-linecap="round"/><rect y="236" width="300" height="64" fill="#6b4226"/>',
+      [['🌻', 60, 66, 56], ['🌱', 150, 90, 30], ['🐦', 222, 66, 30], ['☀️', 262, 30, 36], ['🪱', 70, 172, 40], ['🥕', 132, 160, 44], ['🐜', 205, 168, 34], ['🥔', 248, 222, 40], ['🐛', 88, 258, 36], ['💎', 172, 268, 30], ['🐜', 40, 282, 26]]),
+    scene('sports', 'sports day', '#a2d2ff', '#cdeac0', '<rect y="168" width="300" height="132" fill="#55a630"/><line x1="0" y1="232" x2="300" y2="232" stroke="#fff" stroke-width="3"/><circle cx="150" cy="232" r="26" stroke="#fff" stroke-width="3" fill="none"/>',
+      [['☀️', 40, 40, 40], ['☁️', 130, 46, 40], ['🪁', 232, 56, 46], ['🌳', 122, 142, 46], ['🥅', 250, 172, 52], ['🏀', 58, 192, 36], ['⚽', 150, 232, 36], ['🚲', 70, 266, 46], ['🏆', 260, 270, 38]]),
+    scene('music', 'music show', '#240046', '#5a189a', '<path d="M40 0 L0 220 L90 220Z M260 0 L210 220 L300 220Z" fill="#ffd60a" opacity=".22"/><rect y="220" width="300" height="80" fill="#9d0208"/><rect y="216" width="300" height="8" fill="#ffba08"/>',
+      [['🎶', 70, 58, 34], ['⭐', 150, 34, 22], ['🎵', 230, 50, 30], ['🎤', 150, 106, 40], ['🎸', 60, 170, 52], ['🥁', 150, 184, 60], ['🎹', 245, 178, 52], ['🎺', 60, 262, 36], ['🎻', 240, 262, 38]]),
+    scene('rainy', 'rainy day', '#adb5bd', '#dee2e6', rain() + '<rect y="232" width="300" height="68" fill="#74c69d"/><ellipse cx="150" cy="268" rx="70" ry="14" fill="#90e0ef"/>',
+      [['🌧️', 70, 44, 56], ['🌧️', 222, 40, 50], ['☔', 150, 166, 70], ['🐤', 40, 214, 30], ['🌷', 274, 218, 34], ['🐸', 60, 256, 40], ['🦆', 150, 266, 36], ['🐌', 250, 264, 34]]),
+    scene('harbour', 'harbour', '#ffd6a5', '#caf0f8', '<rect y="170" width="300" height="130" fill="#0096c7"/><rect y="150" width="120" height="22" fill="#7f5539"/><rect x="20" y="172" width="8" height="30" fill="#5c4033"/><rect x="90" y="172" width="8" height="30" fill="#5c4033"/>' +
+      '<rect x="250" y="70" width="22" height="100" fill="#fff"/>' + [80, 120].map(function (y) { return '<rect x="250" y="' + y + '" width="22" height="18" fill="#e63946"/>'; }).join('') + '<path d="M246 70 L261 50 L276 70Z" fill="#e63946"/>',
+      [['☀️', 60, 48, 40], ['🐦', 140, 62, 28], ['🏠', 50, 128, 40], ['🚢', 182, 140, 60], ['⛵', 90, 214, 44], ['🛥️', 222, 232, 44], ['⚓', 40, 256, 34], ['🐟', 150, 272, 28], ['🦀', 270, 282, 28]]),
+    scene('bakery', 'bakery', '#fdf0d5', '#f8d7c4', '<rect x="10" y="104" width="280" height="8" fill="#a0522d"/><rect x="10" y="204" width="280" height="8" fill="#a0522d"/><rect y="290" width="300" height="10" fill="#a0522d"/>',
+      [['🎂', 60, 74, 48], ['🧁', 150, 78, 42], ['🍩', 240, 78, 42], ['🍪', 56, 178, 40], ['🍰', 150, 175, 44], ['🥐', 244, 178, 44], ['🍭', 60, 262, 40], ['🍬', 150, 268, 36], ['🥧', 240, 262, 42]]),
+    scene('roads', 'busy road', '#bde0fe', '#e2eafc', '<rect y="150" width="300" height="150" fill="#95d5b2"/><rect y="198" width="300" height="62" fill="#495057"/>' + stripes(226, 5, 24, '#ffffff', 'transparent'),
+      [['☁️', 60, 45, 40], ['☀️', 262, 40, 42], ['🏠', 60, 132, 52], ['🏥', 150, 122, 56], ['🏫', 245, 130, 54], ['🚒', 62, 214, 44], ['🚓', 250, 214, 40], ['🚑', 160, 244, 44], ['🚲', 60, 284, 30], ['🌳', 272, 282, 34]])
+  ];
+
   /* ---------- cutting a picture into pieces ---------- */
   const f = function (n) { return Math.round(n * 10) / 10; };
   function geo(cols, rows) { return { cols: cols, rows: rows, cw: 300 / cols, ch: 300 / rows }; }
@@ -119,18 +183,19 @@
   }
 
   /* ---------- shared screen helpers ---------- */
-  let speakText = '', timers = [], lastPic = -1, current = null;
+  let speakText = '', timers = [], lastPic = null, current = null;
   const stage = $('pzStage'), tray = $('pzTray'), feed = $('pzFeedback'), ctrl = $('pzControls'),
     hint = $('pzHint'), title = $('pzTitle'), screen = $('puzzle');
 
   function say(t) { speakText = t; P().speak(t); }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function rng(tag) { return window.makeRNG('pz-' + tag + '-' + Date.now() + '-' + Math.random()); }
-  function pickPic(R) {
-    let i = R.int(0, PICS.length - 1);
-    if (i === lastPic) i = (i + 1) % PICS.length;
-    lastPic = i;
-    return PICS[i];
+  function pickPic(R, list) {
+    list = list || PICS;
+    let i = R.int(0, list.length - 1);
+    if (list[i] === lastPic) i = (i + 1) % list.length; // never the same picture twice in a row
+    lastPic = list[i];
+    return list[i];
   }
   function good(msg) { feed.className = 'feedback good'; feed.textContent = msg; }
   function oops(msg, speech) { feed.className = 'feedback try'; feed.textContent = msg; say(speech || msg.replace(/[^\w\s.,!?'-]/g, '')); }
@@ -267,7 +332,7 @@
   /* ---------- 3. Spin Tiles: tap each tile to turn it upright ---------- */
   function runSpin() {
     const lvl = P().currentLevel(), R = rng('spin');
-    const d = gridFor(lvl), g = geo(d[0], d[1]), n = g.cols * g.rows, pic = pickPic(R);
+    const d = gridFor(lvl), g = geo(d[0], d[1]), n = g.cols * g.rows, pic = pickPic(R, PICS.concat(SPIN_PICS));
     title.textContent = '🔄 Spin Tiles · ' + n + ' pieces';
     hint.textContent = 'Tap a tile to turn it. Make the picture right way up!';
     const board = makeBoard('pz-tiles');
