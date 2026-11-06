@@ -66,7 +66,7 @@
       [['🌙', 60, 50, 52], ['⭐', 150, 40, 22], ['⭐', 240, 72, 22], ['🌲', 40, 188, 80], ['🌲', 260, 178, 90], ['🦉', 150, 140, 60], ['🦊', 110, 255, 56], ['🍄', 220, 266, 40]])
   ];
 
-  // 20 more pictures for Spin Tiles. Each has a clear "up" (sky above, ground below) and
+  // 40 more pictures for Spin Tiles. Each has a clear "up" (sky above, ground below) and
   // things spread over the whole picture, so every tile shows which way it is turned.
   function stripes(y, h, w, a, b) {
     let s = '';
@@ -80,6 +80,38 @@
       s += '<line x1="' + x + '" y1="' + y + '" x2="' + (x - 6) + '" y2="' + (y + 16) + '" stroke="#4895ef" stroke-width="3" stroke-linecap="round"/>';
     }
     return s;
+  }
+  function checker(x, y, w, h, n, a, b) { // a checked blanket / cloth
+    let s = '';
+    const rows = Math.round(n * h / w), cw = w / n, ch = h / rows;
+    const r1 = function (v) { return Math.round(v * 10) / 10; }; // `f` is defined further down
+    for (let r = 0; r < rows; r++) for (let c = 0; c < n; c++) {
+      s += '<rect x="' + r1(x + c * cw) + '" y="' + r1(y + r * ch) + '" width="' + r1(cw) + '" height="' + r1(ch) + '" fill="' + ((r + c) % 2 ? b : a) + '"/>';
+    }
+    return s;
+  }
+  function kite(cx, cy, s, c) { // diamond kite with a string and a tail
+    return '<path d="M' + cx + ' ' + (cy - s) + ' L' + (cx + s * 0.7) + ' ' + cy + ' L' + cx + ' ' + (cy + s * 1.2) + ' L' + (cx - s * 0.7) + ' ' + cy + 'Z" fill="' + c + '"/>' +
+      '<path d="M' + cx + ' ' + (cy - s) + ' V' + (cy + s * 1.2) + ' M' + (cx - s * 0.7) + ' ' + cy + ' H' + (cx + s * 0.7) + '" stroke="#fff" stroke-width="2"/>' +
+      '<path d="M' + cx + ' ' + (cy + s * 1.2) + ' q8 12 0 24 q-8 12 0 24" stroke="' + c + '" stroke-width="3" fill="none"/>';
+  }
+  function balloon(cx, cy, r, a, b) { // hot-air balloon with a basket
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + a + '"/><ellipse cx="' + cx + '" cy="' + cy + '" rx="' + (r * 0.42) + '" ry="' + r + '" fill="' + b + '"/>' +
+      '<path d="M' + (cx - r * 0.6) + ' ' + (cy + r * 0.8) + ' L' + (cx - 8) + ' ' + (cy + r + 18) + ' M' + (cx + r * 0.6) + ' ' + (cy + r * 0.8) + ' L' + (cx + 8) + ' ' + (cy + r + 18) + '" stroke="#5c4033" stroke-width="2"/>' +
+      '<rect x="' + (cx - 10) + '" y="' + (cy + r + 16) + '" width="20" height="14" rx="3" fill="#9c6644"/>';
+  }
+  function bricks(x, y, w, h) { // a brick wall
+    let s = '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="#e5e5e5"/>';
+    for (let r = 0, yy = y; yy < y + h; r++, yy += 16) for (let xx = x - (r % 2 ? 16 : 0); xx < x + w; xx += 32) {
+      const l = Math.max(xx, x), rr = Math.min(xx + 30, x + w);
+      if (rr > l) s += '<rect x="' + (l + 1) + '" y="' + (yy + 1) + '" width="' + (rr - l - 2) + '" height="14" rx="2" fill="#c1440e"/>';
+    }
+    return s;
+  }
+  function rangoli(cx, cy) {
+    return ['#ff006e', '#ffbe0b', '#3a86ff', '#8338ec', '#fb5607'].map(function (c, i) {
+      return '<circle cx="' + cx + '" cy="' + cy + '" r="' + (26 - i * 5) + '" fill="' + c + '"/>';
+    }).join('');
   }
   const SPIN_PICS = [
     scene('pond', 'frog pond', '#a8dadc', '#f1faee', '<rect y="150" width="300" height="150" fill="#95d5b2"/><ellipse cx="150" cy="218" rx="128" ry="58" fill="#48cae4"/><ellipse cx="150" cy="222" rx="96" ry="38" fill="#0096c7" opacity=".45"/>',
@@ -127,7 +159,75 @@
     scene('bakery', 'bakery', '#fdf0d5', '#f8d7c4', '<rect x="10" y="104" width="280" height="8" fill="#a0522d"/><rect x="10" y="204" width="280" height="8" fill="#a0522d"/><rect y="290" width="300" height="10" fill="#a0522d"/>',
       [['🎂', 60, 74, 48], ['🧁', 150, 78, 42], ['🍩', 240, 78, 42], ['🍪', 56, 178, 40], ['🍰', 150, 175, 44], ['🥐', 244, 178, 44], ['🍭', 60, 262, 40], ['🍬', 150, 268, 36], ['🥧', 240, 262, 42]]),
     scene('roads', 'busy road', '#bde0fe', '#e2eafc', '<rect y="150" width="300" height="150" fill="#95d5b2"/><rect y="198" width="300" height="62" fill="#495057"/>' + stripes(226, 5, 24, '#ffffff', 'transparent'),
-      [['☁️', 60, 45, 40], ['☀️', 262, 40, 42], ['🏠', 60, 132, 52], ['🏥', 150, 122, 56], ['🏫', 245, 130, 54], ['🚒', 62, 214, 44], ['🚓', 250, 214, 40], ['🚑', 160, 244, 44], ['🚲', 60, 284, 30], ['🌳', 272, 282, 34]])
+      [['☁️', 60, 45, 40], ['☀️', 262, 40, 42], ['🏠', 60, 132, 52], ['🏥', 150, 122, 56], ['🏫', 245, 130, 54], ['🚒', 62, 214, 44], ['🚓', 250, 214, 40], ['🚑', 160, 244, 44], ['🚲', 60, 284, 30], ['🌳', 272, 282, 34]]),
+    scene('picnic', 'picnic', '#bde0fe', '#e9f5db', '<rect y="150" width="300" height="150" fill="#95d5b2"/><rect x="30" y="70" width="20" height="100" fill="#7f5539"/><circle cx="40" cy="70" r="45" fill="#52b788"/>' +
+      checker(95, 196, 180, 72, 9, '#e63946', '#ffffff'),
+      [['☀️', 255, 40, 46], ['☁️', 150, 50, 40], ['🦋', 222, 110, 32], ['🐶', 50, 236, 50], ['🧺', 122, 214, 44], ['🥪', 182, 224, 36], ['🍉', 242, 214, 36], ['🍓', 230, 256, 30], ['🐜', 150, 262, 24], ['🌼', 30, 286, 26]]),
+    scene('playground', 'playground', '#a2d2ff', '#ffffff', '<rect y="230" width="300" height="70" fill="#f4a261"/><path d="M40 230 V120 M70 230 V120" stroke="#e63946" stroke-width="6"/>' +
+      [140, 165, 190, 215].map(function (y) { return '<line x1="40" y1="' + y + '" x2="70" y2="' + y + '" stroke="#e63946" stroke-width="4"/>'; }).join('') +
+      '<path d="M70 120 Q120 140 150 230" stroke="#ffb703" stroke-width="12" fill="none"/><path d="M190 230 L210 110 L270 110 L290 230" stroke="#1982c4" stroke-width="6" fill="none"/>' +
+      '<path d="M225 110 V190 M255 110 V190" stroke="#495057" stroke-width="2"/><rect x="218" y="190" width="44" height="8" rx="3" fill="#8338ec"/>',
+      [['☀️', 40, 40, 40], ['☁️', 150, 40, 40], ['🪁', 270, 50, 36], ['🐦', 240, 76, 26], ['🎈', 140, 100, 40], ['⚽', 60, 272, 30], ['🐕', 130, 262, 40], ['🧸', 240, 268, 32]]),
+    scene('aquarium', 'aquarium', '#caf0f8', '#0077b6', '<path d="M0 255 Q150 240 300 255 V300 H0Z" fill="#ffe8a3"/><path d="M6 40 Q50 30 100 40 T200 40 T294 40" stroke="#fff" stroke-width="3" fill="none"/>' +
+      '<path d="M40 262 Q28 222 45 190 Q58 160 40 130" stroke="#2d6a4f" stroke-width="8" fill="none"/><path d="M262 262 Q275 225 258 195 Q245 168 262 145" stroke="#40916c" stroke-width="8" fill="none"/>' +
+      dots([[150, 70, 4], [156, 54, 3], [70, 110, 3], [240, 150, 4]], '#ffffff') + '<rect x="5" y="5" width="290" height="290" rx="12" fill="none" stroke="#495057" stroke-width="10"/>',
+      [['🐠', 100, 90, 44], ['🐡', 220, 100, 40], ['🐟', 160, 160, 40], ['🦐', 80, 192, 34], ['🐙', 228, 202, 46], ['🐚', 120, 270, 28], ['⭐', 200, 272, 26], ['🦀', 262, 276, 26]]),
+    scene('airport', 'airport', '#90e0ef', '#e0fbfc', '<rect y="230" width="300" height="70" fill="#a7c957"/><rect y="252" width="300" height="32" fill="#495057"/>' + stripes(266, 4, 26, '#ffffff', 'transparent') +
+      '<rect x="30" y="120" width="26" height="112" fill="#adb5bd"/><rect x="20" y="100" width="46" height="24" rx="4" fill="#48cae4"/>',
+      [['☀️', 34, 40, 36], ['☁️', 100, 44, 44], ['🚁', 258, 60, 44], ['✈️', 165, 96, 60], ['☁️', 238, 140, 36], ['🛫', 200, 212, 46], ['🧳', 110, 238, 34], ['🌳', 272, 224, 36]]),
+    scene('workshop', 'workshop', '#e9ecef', '#ced4da', '<rect x="20" y="20" width="260" height="114" rx="6" fill="#d4a373"/>' +
+      dots([[40, 30], [80, 30], [120, 30], [160, 30], [200, 30], [240, 30], [40, 125], [120, 125], [200, 125], [260, 125]], '#8d6e63') +
+      '<rect y="200" width="300" height="16" fill="#8d6e63"/><rect x="20" y="216" width="12" height="54" fill="#6d4c41"/><rect x="268" y="216" width="12" height="54" fill="#6d4c41"/><rect y="270" width="300" height="30" fill="#6c757d"/>',
+      [['🔨', 60, 60, 40], ['🔧', 128, 60, 40], ['🪛', 196, 62, 36], ['✂️', 252, 62, 34], ['⚙️', 90, 108, 30], ['🔩', 172, 108, 28], ['🧰', 70, 178, 44], ['🚗', 168, 182, 40], ['🪚', 242, 184, 36], ['📦', 150, 246, 32]]),
+    scene('veggies', 'vegetable patch', '#caf0f8', '#d8f3dc', '<rect y="180" width="300" height="120" fill="#9c6644"/>' +
+      [205, 235, 265, 292].map(function (y) { return '<rect y="' + y + '" width="300" height="5" fill="#7f5539"/>'; }).join('') +
+      [10, 50, 90, 130, 170, 210, 250].map(function (x) { return '<rect x="' + x + '" y="140" width="14" height="44" rx="6" fill="#f6bd60"/>'; }).join(''),
+      [['🐦', 80, 60, 32], ['☁️', 160, 50, 40], ['☀️', 255, 40, 46], ['🥕', 50, 212, 40], ['🥦', 120, 212, 40], ['🌽', 190, 206, 44], ['🍅', 255, 212, 36], ['🥬', 60, 266, 38], ['🥒', 140, 268, 36], ['🐰', 222, 262, 44]]),
+    scene('building', 'building site', '#ffd6a5', '#fff3b0', '<rect y="230" width="300" height="70" fill="#bc6c25"/>' + bricks(150, 150, 130, 80) +
+      // a tower crane: criss-cross mast, long arm, counterweight, cab and a hook
+      '<rect x="52" y="62" width="18" height="168" fill="#ffb703"/><path d="M52 230 L70 210 L52 190 L70 170 L52 150 L70 130 L52 110 L70 90 L52 70" stroke="#e85d04" stroke-width="3" fill="none"/>' +
+      '<rect x="14" y="50" width="222" height="12" fill="#ffb703"/>' + [40, 80, 120, 160, 200].map(function (x) { return '<path d="M' + x + ' 50 L' + (x + 20) + ' 62" stroke="#e85d04" stroke-width="2"/>'; }).join('') +
+      '<rect x="14" y="62" width="30" height="20" fill="#6c757d"/><rect x="70" y="62" width="24" height="18" rx="3" fill="#4361ee"/><rect x="74" y="65" width="16" height="9" fill="#caf0f8"/>' +
+      '<line x1="182" y1="62" x2="182" y2="108" stroke="#495057" stroke-width="2"/><path d="M178 108 h8 v6 a4 4 0 0 1 -8 0Z" fill="#495057"/>',
+      [['🐦', 110, 36, 24], ['☀️', 262, 40, 40], ['☁️', 250, 104, 34], ['🧱', 182, 124, 26], ['🚧', 40, 266, 40], ['🚜', 132, 254, 52], ['⛑️', 248, 266, 36]]),
+    scene('bees', 'bee garden', '#fff3b0', '#ffe8a3', '<path d="M0 220 Q150 200 300 222 V300 H0Z" fill="#80b918"/><line x1="20" y1="58" x2="140" y2="58" stroke="#7f5539" stroke-width="6"/>' +
+      '<ellipse cx="80" cy="84" rx="26" ry="16" fill="#e9c46a"/><ellipse cx="80" cy="110" rx="36" ry="18" fill="#f4a261"/><ellipse cx="80" cy="138" rx="30" ry="16" fill="#e9c46a"/><circle cx="80" cy="140" r="6" fill="#5c4033"/>',
+      [['🐝', 150, 60, 34], ['☀️', 260, 40, 40], ['🐝', 222, 110, 30], ['🐝', 136, 152, 28], ['🌻', 182, 200, 60], ['🌻', 260, 210, 54], ['🍯', 70, 250, 40], ['🌼', 130, 274, 30], ['🌷', 230, 276, 30]]),
+    scene('camping', 'camping trip', '#023e8a', '#ff9e00', '<path d="M0 222 L70 122 L140 222Z" fill="#1d3557"/><path d="M100 222 L190 102 L280 222Z" fill="#457b9d"/><path d="M190 102 L172 126 L208 126Z" fill="#fff"/>' +
+      '<rect y="220" width="300" height="80" fill="#386641"/>' + dots([[30, 30], [120, 60, 1.5], [200, 30]], '#fff'),
+      [['⭐', 60, 44, 20], ['🌙', 250, 40, 40], ['🌲', 28, 200, 60], ['⛺', 110, 214, 70], ['🌲', 272, 195, 60], ['🔥', 200, 252, 40], ['🎒', 58, 274, 32], ['🦌', 250, 270, 36]]),
+    scene('balloons', 'hot-air balloons', '#ffc8dd', '#bde0fe', '<path d="M0 232 Q150 205 300 236 V300 H0Z" fill="#90be6d"/>' + balloon(100, 112, 34, '#e63946', '#ffd166') + balloon(214, 76, 28, '#4361ee', '#4cc9f0'),
+      [['☁️', 60, 50, 40], ['🕊️', 160, 38, 30], ['☀️', 270, 34, 34], ['🎈', 34, 160, 30], ['☁️', 236, 152, 36], ['🌳', 60, 250, 44], ['🏠', 160, 258, 40], ['🐑', 250, 268, 34]]),
+    scene('diwali', 'Diwali night', '#10002b', '#5a189a', '<path d="M30 145 L150 85 L270 145Z" fill="#7b2cbf"/><rect x="40" y="145" width="220" height="105" fill="#3c096c"/>' +
+      '<rect x="64" y="168" width="34" height="30" fill="#ffd60a"/><rect x="202" y="168" width="34" height="30" fill="#ffd60a"/><rect x="132" y="190" width="36" height="60" fill="#ffba08"/>' +
+      '<rect y="250" width="300" height="50" fill="#7b2cbf"/>' + rangoli(150, 276),
+      [['🎆', 60, 48, 50], ['🌙', 150, 34, 30], ['🎇', 240, 56, 50], ['🪔', 40, 264, 30], ['🪔', 100, 266, 26], ['🪔', 200, 266, 26], ['🪔', 260, 264, 30]]),
+    scene('kites', 'kite festival', '#4cc9f0', '#caf0f8', kite(150, 96, 30, '#e63946') + kite(240, 64, 24, '#ffbe0b') + kite(90, 150, 22, '#8338ec') +
+      '<rect x="0" y="210" width="90" height="90" fill="#f4a261"/><rect x="90" y="230" width="110" height="70" fill="#e9c46a"/><rect x="200" y="200" width="100" height="100" fill="#e76f51"/>' +
+      '<rect x="20" y="236" width="20" height="20" fill="#fff"/><rect x="130" y="252" width="20" height="20" fill="#fff"/><rect x="240" y="232" width="20" height="20" fill="#fff"/>',
+      [['🪁', 60, 60, 42], ['☀️', 272, 140, 34], ['☁️', 200, 152, 36], ['🐈', 92, 214, 32], ['🪴', 240, 184, 30], ['🐦', 160, 218, 24]]),
+    scene('cricket', 'cricket match', '#a2d2ff', '#e0fbfc', stripes(84, 50, 20, '#4361ee', '#ffd166') + '<ellipse cx="150" cy="230" rx="170" ry="96" fill="#55a630"/>' +
+      '<rect x="130" y="168" width="40" height="112" fill="#e9c46a"/><path d="M140 168 V190 M150 168 V190 M160 168 V190 M140 258 V280 M150 258 V280 M160 258 V280" stroke="#7f5539" stroke-width="3"/><circle cx="200" cy="200" r="6" fill="#c1121f"/>',
+      [['☀️', 40, 36, 36], ['🐦', 150, 44, 24], ['☁️', 240, 40, 40], ['🎉', 150, 108, 26], ['🏏', 90, 230, 44], ['🧢', 50, 272, 30], ['🏆', 250, 250, 36]]),
+    scene('village', 'village temple', '#ffbe0b', '#fff3b0', '<rect y="210" width="300" height="90" fill="#ccd5ae"/><path d="M0 286 Q150 270 300 290 V300 H0Z" fill="#48cae4"/>',
+      [['🐦', 80, 50, 26], ['☀️', 250, 40, 44], ['🌴', 40, 158, 70], ['🛕', 150, 150, 80], ['🌴', 265, 165, 60], ['🐄', 70, 248, 46], ['🛺', 200, 248, 46], ['🌾', 130, 272, 30], ['🐐', 275, 266, 32]]),
+    scene('meadow', 'butterfly meadow', '#bde0fe', '#fdffb6', '<path d="M0 182 Q150 162 300 186 V300 H0Z" fill="#80b918"/>',
+      [['☁️', 110, 32, 30], ['🦋', 60, 64, 40], ['🦋', 250, 62, 38], ['🦋', 160, 104, 34], ['🐝', 232, 150, 30], ['🌼', 40, 222, 36], ['🌷', 110, 240, 40], ['🌸', 190, 226, 36], ['🌻', 260, 232, 46], ['🐛', 80, 280, 30], ['🐞', 170, 280, 28]]),
+    scene('breakfast', 'breakfast table', '#fff8e1', '#ffe5b4', '<rect x="188" y="20" width="100" height="90" fill="#a2d2ff" stroke="#fff" stroke-width="6"/><rect y="190" width="300" height="110" fill="#e9c46a"/>' + stripes(190, 8, 20, '#e63946', '#ffffff'),
+      [['🖼️', 60, 60, 44], ['☀️', 238, 62, 40], ['🥣', 60, 168, 40], ['🍌', 130, 170, 40], ['🥛', 200, 166, 40], ['🍞', 262, 170, 40], ['🍳', 70, 250, 40], ['🧃', 140, 250, 36], ['🍓', 200, 256, 32], ['🥄', 256, 256, 30]]),
+    scene('toyroom', 'toy room', '#e0c3fc', '#cdb4db', '<rect x="20" y="100" width="260" height="8" fill="#9c6644"/><rect y="230" width="300" height="70" fill="#ffafcc"/><ellipse cx="150" cy="268" rx="120" ry="22" fill="#ffc8dd"/>',
+      [['🎲', 50, 80, 30], ['🧩', 110, 80, 32], ['📚', 170, 78, 34], ['🪀', 240, 80, 30], ['🪁', 242, 152, 40], ['🚂', 70, 196, 44], ['🧸', 160, 198, 52], ['🎈', 262, 206, 36], ['🚗', 60, 266, 36], ['⚽', 150, 272, 30], ['🦖', 250, 266, 40]]),
+    scene('lake', 'mountain lake', '#a8dadc', '#f1faee', '<path d="M0 165 L80 80 L160 165Z" fill="#6c757d"/><path d="M110 165 L200 70 L300 165Z" fill="#495057"/><path d="M200 70 L183 92 L217 92Z" fill="#fff"/>' +
+      '<rect y="160" width="300" height="100" fill="#457b9d"/><rect y="258" width="300" height="42" fill="#606c38"/>',
+      [['🦅', 70, 50, 32], ['☀️', 255, 36, 40], ['🌲', 28, 168, 50], ['🌲', 272, 162, 50], ['🚣', 130, 194, 46], ['🦢', 222, 212, 40], ['🐟', 90, 236, 28], ['🎣', 50, 276, 32], ['🐸', 200, 280, 28]]),
+    scene('treehouse', 'treehouse', '#caf0f8', '#d8f3dc', '<rect x="130" y="130" width="40" height="112" fill="#7f5539"/><circle cx="110" cy="100" r="60" fill="#52b788"/><circle cx="190" cy="96" r="62" fill="#40916c"/>' +
+      '<path d="M96 100 L150 70 L204 100Z" fill="#9b2226"/><rect x="104" y="100" width="92" height="50" fill="#e76f51"/><rect x="138" y="114" width="22" height="36" fill="#6d4c41"/>' +
+      '<path d="M190 150 V240 M206 150 V240" stroke="#bc6c25" stroke-width="4"/>' + [168, 186, 204, 222].map(function (y) { return '<line x1="190" y1="' + y + '" x2="206" y2="' + y + '" stroke="#bc6c25" stroke-width="3"/>'; }).join('') +
+      '<rect y="240" width="300" height="60" fill="#80b918"/>',
+      [['☀️', 36, 32, 32], ['🐦', 262, 40, 28], ['🦉', 52, 140, 36], ['🍎', 250, 116, 30], ['🐿️', 252, 214, 40], ['🐕', 60, 266, 40], ['🌼', 262, 276, 28]]),
+    scene('icecream', 'ice cream shop', '#bde0fe', '#ffe5ec', stripes(18, 42, 30, '#ff5d8f', '#ffffff') + '<rect x="84" y="72" width="132" height="40" rx="8" fill="#fff" stroke="#ff5d8f" stroke-width="4"/>' +
+      '<text x="150" y="92" font-size="18" font-weight="bold" fill="#ff5d8f" text-anchor="middle" dominant-baseline="central">ICE CREAM</text><rect y="186" width="300" height="114" fill="#ffafcc"/><rect y="180" width="300" height="10" fill="#fb6f92"/>',
+      [['🍓', 270, 94, 26], ['🍦', 60, 148, 44], ['🍨', 240, 148, 44], ['🍧', 60, 240, 40], ['🍫', 150, 242, 36], ['🍒', 240, 240, 36]])
   ];
 
   /* ---------- cutting a picture into pieces ---------- */
@@ -742,7 +842,7 @@
       stage.innerHTML = ''; tray.innerHTML = ''; ctrl.innerHTML = '';
       feed.className = 'feedback'; feed.textContent = '';
       title.textContent = '🎨 Copy the Pattern (' + (round + 1) + '/' + ROUNDS + ')';
-      hint.textContent = lvl === 3 ? 'Remember the pattern, then copy it! Tap 👀 to peek.' : 'Make your grid look just like the example!';
+      hint.textContent = 'Make your grid look just like the example!';
       const N = cfg.n * cfg.n, pal = PAL.slice(0, cfg.colors);
       const target = Array(N).fill(-1);
       R.sample(Array.from({ length: N }, function (_, i) { return i; }), R.int(cfg.fill[0], cfg.fill[1])).forEach(function (i) { target[i] = R.int(0, cfg.colors - 1); });
@@ -766,10 +866,6 @@
       ex.innerHTML = '<span class="pz-label">Example</span>';
       const exGrid = grid('small', target);
       ex.appendChild(exGrid);
-      const cover = document.createElement('div');
-      cover.className = 'pz-cover';
-      cover.textContent = '🙈';
-      ex.appendChild(cover);
       stage.appendChild(ex);
       const yours = document.createElement('div');
       yours.className = 'pz-example';
@@ -780,7 +876,6 @@
         c.style.background = mine[i] >= 0 ? pal[mine[i]] : '';
         if (mine.every(function (v, k) { return v === target[k]; })) {
           locked = true;
-          cover.classList.remove('on');
           good('🎉 A perfect copy!');
           say('Perfect! Your grid matches the example!');
           P().addStars(1); P().burst();
@@ -803,20 +898,7 @@
         };
         tray.appendChild(b);
       });
-      if (lvl === 3) {
-        later(function () { if (!locked) { cover.classList.add('on'); say('Now copy it from memory! Tap peek if you need help.'); } }, 6000);
-        const peek = document.createElement('button');
-        peek.type = 'button';
-        peek.className = 'pz-swatch pz-peek';
-        peek.textContent = '👀';
-        peek.onclick = function () {
-          if (locked) return;
-          cover.classList.remove('on');
-          later(function () { if (!locked) cover.classList.add('on'); }, 2000);
-        };
-        tray.appendChild(peek);
-      }
-      say(lvl === 3 ? 'Look carefully and remember the pattern! It will hide soon.' : 'Pick a colour, then tap the squares to copy the example. Tap again to clear.');
+      say('Pick a colour, then tap the squares to copy the example. Tap again to clear.');
     }
     ask();
   }
