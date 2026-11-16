@@ -46,7 +46,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=39" />
+  <link rel="stylesheet" href="css/style.css?v=40" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
 </head>
@@ -330,6 +330,11 @@
         <span class="tile-name">Web Hero</span>
         <span class="tile-sub">Swing to the number</span>
       </button>
+      <button class="tile t-wcross" data-wcross="open">
+        <span class="tile-emoji">🕸️</span>
+        <span class="tile-name">Web Crossing</span>
+        <span class="tile-sub">Cut the webs, reach the top</span>
+      </button>
     </section>
   </main>
 
@@ -344,6 +349,25 @@
     <div id="webStage" class="web-stage"></div>
     <div id="webFeedback" class="feedback"></div>
     <div id="webControls" class="web-controls"></div>
+  </main>
+
+  <!-- WEB CROSSING (8x8 board, cut spider webs to reach the top) SCREEN -->
+  <main id="wcross" class="screen">
+    <header class="play-top">
+      <button id="wcHome" class="round-btn" title="Back home">🏠</button>
+      <div class="mem-info" id="wcTitle">🕸️ Web Crossing</div>
+      <button id="wcSpeak" class="round-btn" title="Hear it again">🔊</button>
+    </header>
+    <p id="wcHint" class="sh-hint"></p>
+    <div id="wcBoard" class="wc-board"></div>
+    <div id="wcPad" class="wc-pad">
+      <button type="button" class="wc-arrow" data-dir="up" aria-label="Up">⬆️</button>
+      <button type="button" class="wc-arrow" data-dir="left" aria-label="Left">⬅️</button>
+      <button type="button" class="wc-arrow" data-dir="down" aria-label="Down">⬇️</button>
+      <button type="button" class="wc-arrow" data-dir="right" aria-label="Right">➡️</button>
+    </div>
+    <div id="wcFeedback" class="feedback"></div>
+    <div id="wcControls" class="sh-controls"></div>
   </main>
 
   <!-- SHAPES & SPACE HUB SCREEN -->
@@ -558,8 +582,9 @@
   <script src="js/content.js?v=9"></script>
   <script src="js/stories.js?v=23"></script>
   <script src="js/generators.js?v=32"></script>
-  <script src="js/app.js?v=35"></script>
+  <script src="js/app.js?v=36"></script>
   <script src="js/puzzles.js?v=3"></script>
   <script src="js/spell.js?v=3"></script>
+  <script src="js/webcross.js?v=1"></script>
 </body>
 </html>

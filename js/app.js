@@ -168,6 +168,7 @@
                 : t.dataset.puzzles ? show('puzzleHub')
                 : t.dataset.pz ? window.PUZZLES.start(t.dataset.pz)
                 : t.dataset.spell ? window.SPELL.open()
+                : t.dataset.wcross ? window.WEBCROSS.start()
                 : t.dataset.game === 'calendar' ? startCalendar()
                   : t.dataset.game === 'clock' ? startClock()
                     : t.dataset.game === 'subtract' ? startSubtract()
